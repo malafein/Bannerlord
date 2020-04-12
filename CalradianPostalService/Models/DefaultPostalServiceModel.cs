@@ -11,6 +11,8 @@ namespace CalradianPostalService.Models
     class DefaultPostalServiceModel : PostalServiceModel
     {
         const float CourierRate = 1.0f;
+        const float MissiveDeliveryRate = 1.0f;
+
         public override MBReadOnlyList<Hero> GetValidMissiveRecipients(Hero hero)
         {
             if (hero.IsHumanPlayerCharacter)
@@ -22,7 +24,7 @@ namespace CalradianPostalService.Models
                 return new MBReadOnlyList<Hero>(validRecipients);
             }
 
-            // TODO: find valid recipients for NPC heroes.
+            // TODO: find valid recipients for NPC heroes?
             return new MBReadOnlyList<Hero>(new List<Hero>());
         }
 
@@ -32,6 +34,11 @@ namespace CalradianPostalService.Models
             float distance = sender.GetPosition().Distance(recipient.GetPosition());
 
             return (int)Math.Ceiling(CourierRate * distance);
+        }
+
+        public override CampaignTime GetMissiveDeliveryTime(Hero sender, Hero recipient)
+        {
+            return CampaignTime.DaysFromNow(MissiveDeliveryRate); // TODO: get arrival time based on distance
         }
 
         public override bool IsValidRecipientOfCommand(Hero sender, Hero recipient)

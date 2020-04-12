@@ -108,7 +108,7 @@ namespace CalradianPostalService.Behaviors
 
         public void game_menu_cps_town_courier_missive_friendly_on_consequence(MenuCallbackArgs args)
         {
-            // TODO: create and send the missive
+            // create and send the missive
             CPSModule.DebugMessage("Friendly Missive selected.", log);
 
             InformationManager.ShowTextInquiry(new TextInquiryData("Enter a brief message:", "", true, false, "Send", "Cancel",
@@ -119,7 +119,7 @@ namespace CalradianPostalService.Behaviors
 
         public void game_menu_cps_town_courier_missive_threat_on_consequence(MenuCallbackArgs args)
         {
-            // TODO: create and send the missive
+            // create and send the missive
             CPSModule.DebugMessage("Threatening Missive selected.", log);
 
             InformationManager.ShowTextInquiry(new TextInquiryData("Let them know how you really feel:", "", true, false, "Send", "Cancel",
@@ -129,8 +129,8 @@ namespace CalradianPostalService.Behaviors
         }
         public void game_menu_cps_town_courier_missive_command_on_consequence(MenuCallbackArgs args)
         {
-            // TODO: create and send the missive
-            CPSModule.ErrorMessage("This feature has not yet been implmented.  Sorry, no refunds..");
+            // create and send the missive
+            CPSModule.ErrorMessage("This feature has not yet been implmented.  Sorry, no refunds..");  // TODO: Remove after commands are implemented.
 
             InformationManager.ShowTextInquiry(new TextInquiryData("Enter a command:", "", true, false, "Send", "Cancel",
                 (string s) => { SendMissive<MissiveCommand>(s); }, null));
@@ -149,7 +149,7 @@ namespace CalradianPostalService.Behaviors
                     Sender = Hero.MainHero,
                     Recipient = _recipientSelected,
                     CampaignTimeSent = CampaignTime.Now,
-                    CampaignTimeArrival = CampaignTime.DaysFromNow(1.0f), // TODO: get arrival time from model based on distance
+                    CampaignTimeArrival = PostalServiceModel.GetMissiveDeliveryTime(Hero.MainHero, _recipientSelected),
                     Text = s
                 };
 

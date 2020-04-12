@@ -17,6 +17,8 @@ namespace CalradianPostalService.Models
 
         public abstract int GetCourierFee(Hero sender, Hero recipient);
 
+        public abstract CampaignTime GetMissiveDeliveryTime(Hero sender, Hero recipient);
+
         public abstract bool IsValidRecipientOfCommand(Hero sender, Hero recipient);
     }
 }
