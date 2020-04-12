@@ -1,5 +1,6 @@
 ﻿using CalradianPostalService.Models;
 using log4net;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,7 @@ namespace CalradianPostalService.Behaviors
         private Hero _recipientSelected;
 
         private List<IMissive> _missives = new List<IMissive>();
+        private string _missiveSyncData;
 
         private static bool back_on_condition(MenuCallbackArgs args)
         {
@@ -221,7 +223,18 @@ namespace CalradianPostalService.Behaviors
 
         public override void SyncData(IDataStore dataStore)
         {
-            dataStore.SyncData("_missives", ref this._missives);
+            var serializer = new JsonSerializer();
+
+            if (dataStore.IsLoading)
+            {
+                dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
+                _missives = JsonConvert.DeserializeObject(_missiveSyncData) as List<IMissive>;
+            }
+            else if (dataStore.IsSaving)
+            {
+                _missiveSyncData = JsonConvert.SerializeObject(_missives);
+                dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
+            }
         }
     }
 }
