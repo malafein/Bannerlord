@@ -7,14 +7,14 @@ For now, **DO NOT INSTALL THIS MOD.**  Until I finish integrating it with the sa
 
 After it is savegame compatible, I will post it to [Nexus](https://www.nexusmods.com/mountandblade2bannerlord/mods/).
 
-###Features in development:
+### Features in development:
 * New game menu added to towns to find a courier
   * Select any known, living hero as a recipient
   * Choose a type of missive to send and pay a fee based on distance
     * Friendly - Chance to slightly improve relation and gain Charm xp
     * Threatening - Chance to slightly reduce relation and gain Charm xp
 
-###Features being considered:
+### Features being considered:
 * Command - missives to companions and vassals to direct them where to go
   * Examples may include: "Follow me", "Patrol near Danustica", "Raid enemy villages", "Capture Ergeon"
 * add mounted courier troop that will deliver missives
