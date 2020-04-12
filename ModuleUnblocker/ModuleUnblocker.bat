@@ -1,0 +1,1 @@
+powershell "dir .. | Where-Object { $_.PSIsContainer -and $_.Name -CNotIn \"CustomBattle\", \"ModuleUnblocker\", \"Native\", \"StoryMode\", \"SandBox\", \"SandBoxCore\" } | dir -Recurse | Unblock-File"
