@@ -32,8 +32,6 @@ namespace CalradianPostalService.Behaviors
 
         public static bool game_menu_town_find_courier_on_condition(MenuCallbackArgs args)
         {
-            // TODO: any conditions to check?
-
             args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
             return true;
         }
@@ -138,12 +136,11 @@ namespace CalradianPostalService.Behaviors
             GameMenu.SwitchToMenu("cps_town_courier");
         }
 
-        private void SendMissive<T>(string s) where T : MissiveBase, new()
+        private void SendMissive<T>(string s) where T : IMissive, new()
         {
             try
             {
                 CPSModule.DebugMessage($"You entered: {s}", log);
-                //IMissive missive = MBObjectManager.Instance.CreateObject<T>();
                 var missive = new T
                 {
                     Sender = Hero.MainHero,
@@ -153,7 +150,7 @@ namespace CalradianPostalService.Behaviors
                     Text = s
                 };
 
-                _missives.Add(missive); // TODO: remove once integrated with MBObjectManager and save system
+                _missives.Add(missive);
 
                 missive.OnSend();
             }
@@ -169,8 +166,6 @@ namespace CalradianPostalService.Behaviors
             {
                 var element = recipients.First<InquiryElement>();
                 Hero recipient = Hero.FindFirst((Hero h) => { return h.StringId == element.Identifier.ToString(); });
-
-                //MBTextManager.SetTextVariable("CPS_MISSIVE_RECIPIENT", element.Title);
                 MBTextManager.SetTextVariable("CPS_MISSIVE_RECIPIENT", recipient.Name);
                 _recipientSelected = recipient;
                 GameMenu.SwitchToMenu("cps_town_courier_missive");
@@ -200,9 +195,7 @@ namespace CalradianPostalService.Behaviors
         {
             try
             {
-                //var missives = new List<MissiveBase>();
-                //MBObjectManager.Instance.GetAllInstancesOfObjectType<MissiveBase>(ref missives);
-                CPSModule.DebugMessage($"{_missives.Count} missives to process...", log);
+                CPSModule.DebugMessage($"{_missives.Count} missives out for delivery..", log);
                 for (int i = _missives.Count - 1; i >= 0; --i)
                 {
                     if (_missives[i].CampaignTimeArrival <= CampaignTime.Now)

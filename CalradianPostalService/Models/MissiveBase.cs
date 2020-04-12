@@ -11,7 +11,7 @@ using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
-    public class MissiveBase : MBObjectBase, IMissive
+    public class MissiveBase : IMissive
     {
         public CampaignTime CampaignTimeSent { get; set; }
         public CampaignTime CampaignTimeArrival { get; set; }

@@ -13,7 +13,6 @@ using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
-    [SaveableClass(555551)]
     public class MissiveFriendly : MissiveBase, IMissive
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(MissiveFriendly));

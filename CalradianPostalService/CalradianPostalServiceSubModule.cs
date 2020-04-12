@@ -117,10 +117,6 @@ namespace CalradianPostalService
                 if (game.GameType is Campaign)
                 {
                     CampaignGameStarter campaignGameStarter = gameStarterObject as CampaignGameStarter;
-                    MBObjectManager.Instance.RegisterType<MissiveBase>("Missive", "Missives", false);
-                    MBObjectManager.Instance.RegisterType<MissiveFriendly>("MissiveFriendly", "MissiveFriendlies", false);
-                    MBObjectManager.Instance.RegisterType<MissiveThreat>("MissiveThreat", "MissiveThreats", false);
-                    MBObjectManager.Instance.RegisterType<MissiveCommand>("MissiveCommand", "MissiveCommands", false);
                     campaignGameStarter.AddModel(new DefaultPostalServiceModel());
                     campaignGameStarter.AddBehavior(new PostalServiceBehavior());
                 }

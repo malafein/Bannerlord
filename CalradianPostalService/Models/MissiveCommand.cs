@@ -12,7 +12,6 @@ using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
-    [SaveableClass(555553)]
     public class MissiveCommand : MissiveBase, IMissive
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(MissiveCommand));

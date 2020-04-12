@@ -99,7 +99,6 @@
     <Compile Include="Models\IMissive.cs" />
     <Compile Include="Models\MissiveThreat.cs" />
     <Compile Include="Models\PostalServiceModel.cs" />
-    <Compile Include="PostalServiceTypeDefiner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
