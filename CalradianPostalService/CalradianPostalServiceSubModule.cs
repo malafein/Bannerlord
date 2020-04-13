@@ -28,68 +28,68 @@ namespace CalradianPostalService
 
         private static readonly ILog log = LogManager.GetLogger(typeof(CalradianPostalServiceSubModule));
 
-        public override void BeginGameStart(Game game)
-        {
-            base.BeginGameStart(game);
+        //public override void BeginGameStart(Game game)
+        //{
+        //    base.BeginGameStart(game);
 
-            DebugMessage("BegingGameStart called.");
-        }
+        //    DebugMessage("BegingGameStart called.");
+        //}
 
-        public override bool DoLoading(Game game)
-        {
-            DebugMessage("DoLoading called.");
+        //public override bool DoLoading(Game game)
+        //{
+        //    DebugMessage("DoLoading called.");
 
-            return base.DoLoading(game);
-        }
+        //    return base.DoLoading(game);
+        //}
 
-        public override void OnCampaignStart(Game game, object starterObject)
-        {
-            base.OnCampaignStart(game, starterObject);
+        //public override void OnCampaignStart(Game game, object starterObject)
+        //{
+        //    base.OnCampaignStart(game, starterObject);
 
-            DebugMessage("OnCampaignStart called.");
-        }
+        //    DebugMessage("OnCampaignStart called.");
+        //}
 
-        public override void OnGameEnd(Game game)
-        {
-            base.OnGameEnd(game);
+        //public override void OnGameEnd(Game game)
+        //{
+        //    base.OnGameEnd(game);
 
-            DebugMessage("OnGameEnd called.");
-        }
+        //    DebugMessage("OnGameEnd called.");
+        //}
 
-        public override void OnGameInitializationFinished(Game game)
-        {
-            base.OnGameInitializationFinished(game);
+        //public override void OnGameInitializationFinished(Game game)
+        //{
+        //    base.OnGameInitializationFinished(game);
 
-            DebugMessage("OnGameInitializationFinished called.");
-        }
+        //    DebugMessage("OnGameInitializationFinished called.");
+        //}
 
-        public override void OnGameLoaded(Game game, object initializerObject)
-        {
-            base.OnGameLoaded(game, initializerObject);
+        //public override void OnGameLoaded(Game game, object initializerObject)
+        //{
+        //    base.OnGameLoaded(game, initializerObject);
 
-            DebugMessage("OnGameLoaded called.");
-        }
+        //    DebugMessage("OnGameLoaded called.");
+        //}
 
-        public override void OnMissionBehaviourInitialize(Mission mission)
-        {
-            base.OnMissionBehaviourInitialize(mission);
+        //public override void OnMissionBehaviourInitialize(Mission mission)
+        //{
+        //    base.OnMissionBehaviourInitialize(mission);
 
-            DebugMessage("OnMissionBehaviourInitialize called.");
-        }
+        //    DebugMessage("OnMissionBehaviourInitialize called.");
+        //}
 
-        public override void OnMultiplayerGameStart(Game game, object starterObject)
-        {
-            base.OnMultiplayerGameStart(game, starterObject);
+        //public override void OnMultiplayerGameStart(Game game, object starterObject)
+        //{
+        //    base.OnMultiplayerGameStart(game, starterObject);
 
-            DebugMessage("OnMultiplayerGameStart called.");
-        }
+        //    DebugMessage("OnMultiplayerGameStart called.");
+        //}
 
-        public override void OnNewGameCreated(Game game, object initializerObject)
-        {
-            base.OnNewGameCreated(game, initializerObject);
+        //public override void OnNewGameCreated(Game game, object initializerObject)
+        //{
+        //    base.OnNewGameCreated(game, initializerObject);
 
-            DebugMessage("OnNewGameCreated called.");
-        }
+        //    DebugMessage("OnNewGameCreated called.");
+        //}
 
         //protected override void OnApplicationTick(float dt)
         //{
@@ -117,10 +117,6 @@ namespace CalradianPostalService
                 if (game.GameType is Campaign)
                 {
                     CampaignGameStarter campaignGameStarter = gameStarterObject as CampaignGameStarter;
-                    MBObjectManager.Instance.RegisterType<MissiveBase>("Missive", "Missives", false);
-                    MBObjectManager.Instance.RegisterType<MissiveFriendly>("MissiveFriendly", "MissiveFriendlies", false);
-                    MBObjectManager.Instance.RegisterType<MissiveThreat>("MissiveThreat", "MissiveThreats", false);
-                    MBObjectManager.Instance.RegisterType<MissiveCommand>("MissiveCommand", "MissiveCommands", false);
                     campaignGameStarter.AddModel(new DefaultPostalServiceModel());
                     campaignGameStarter.AddBehavior(new PostalServiceBehavior());
                 }
@@ -160,12 +156,12 @@ namespace CalradianPostalService
             }
         }
 
-        protected override void OnSubModuleUnloaded()
-        {
-            base.OnSubModuleUnloaded();
+        //protected override void OnSubModuleUnloaded()
+        //{
+        //    base.OnSubModuleUnloaded();
 
-            DebugMessage("OnSubModuleUnloaded called.");
-        }
+        //    DebugMessage("OnSubModuleUnloaded called.");
+        //}
 
         private static void DebugMessage(string msg)
         {

@@ -57,6 +57,9 @@
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
@@ -97,9 +100,9 @@
     <Compile Include="Models\MissiveCommand.cs" />
     <Compile Include="Models\MissiveFriendly.cs" />
     <Compile Include="Models\IMissive.cs" />
+    <Compile Include="Models\MissiveSyncData.cs" />
     <Compile Include="Models\MissiveThreat.cs" />
     <Compile Include="Models\PostalServiceModel.cs" />
-    <Compile Include="PostalServiceTypeDefiner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +110,7 @@
     <Content Include="SubModule.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
@@ -121,6 +125,7 @@ if not exist "%25bin_dir%25" mkdir "%25bin_dir%25"
 if not exist "%25data_dir%25" mkdir "%25data_dir%25"
 
 copy "$(TargetDir)$(ProjectName).dll" "%25bin_dir%25"
+copy "$(TargetDir)$(ProjectName).pdb" "%25bin_dir%25"
 copy "$(TargetDir)log4net.dll" "%25bin_dir%25"
 copy "$(TargetDir)0Harmony.dll" "%25bin_dir%25"
 copy "$(ProjectDir)\SubModule.xml" "%25mod_dir%25"
