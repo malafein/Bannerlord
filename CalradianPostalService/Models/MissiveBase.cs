@@ -20,6 +20,14 @@ namespace CalradianPostalService.Models
         public string Text { get; set; }
 
         protected MissiveBase() { }
+        protected MissiveBase(MissiveSyncData data) 
+        {
+            CampaignTimeSent = data.CampaignTimeSent;
+            CampaignTimeArrival = data.CampaignTimeArrival;
+            Recipient = Hero.FindFirst((Hero h) => { return h.StringId == data.RecipientId; });
+            Sender = Hero.FindFirst((Hero h) => { return h.StringId == data.SenderId; });
+            Text = data.Text;
+        }
 
         public virtual void OnDelivery()
         {

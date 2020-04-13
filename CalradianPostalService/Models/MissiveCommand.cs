@@ -16,6 +16,9 @@ namespace CalradianPostalService.Models
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(MissiveCommand));
 
+        public MissiveCommand() { }
+        public MissiveCommand(MissiveSyncData data) : base(data) { }
+
         public override void OnDelivery()
         {
             throw new NotImplementedException();

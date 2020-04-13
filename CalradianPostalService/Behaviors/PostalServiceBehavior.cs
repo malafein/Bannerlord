@@ -223,18 +223,31 @@ namespace CalradianPostalService.Behaviors
 
         public override void SyncData(IDataStore dataStore)
         {
-            var serializer = new JsonSerializer();
+            try
+            {
+                JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
 
-            if (dataStore.IsLoading)
-            {
-                dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
-                _missives = JsonConvert.DeserializeObject(_missiveSyncData) as List<IMissive>;
+                if (dataStore.IsSaving)
+                {
+                    List<MissiveSyncData> sync = (from m in _missives select new MissiveSyncData(m)).DefaultIfEmpty().ToList();
+                    _missiveSyncData = JsonConvert.SerializeObject(sync, settings);
+                    dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
+                }
+                else if (dataStore.IsLoading)
+                {
+                    dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
+                    List<MissiveSyncData> sync = JsonConvert.DeserializeObject(_missiveSyncData, settings) as List<MissiveSyncData>;
+                    _missives = (from m in sync where m.TypeName == "MissiveFriendly" select new MissiveFriendly(m)).DefaultIfEmpty().ToList<IMissive>();
+                    _missives.AddRange((from m in sync where m.TypeName == "MissiveThreat" select new MissiveThreat(m)));
+                    _missives.AddRange((from m in sync where m.TypeName == "MissiveCommand" select new MissiveCommand(m)));
+                }
             }
-            else if (dataStore.IsSaving)
+            catch (Exception ex)
             {
-                _missiveSyncData = JsonConvert.SerializeObject(_missives);
-                dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
+                CPSModule.DebugMessage(ex, log);
             }
         }
+
+        
     }
 }

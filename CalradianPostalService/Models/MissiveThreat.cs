@@ -17,6 +17,9 @@ namespace CalradianPostalService.Models
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(MissiveThreat));
 
+        public MissiveThreat() { }
+        public MissiveThreat(MissiveSyncData data) : base(data) { }
+
         public override void OnDelivery()
         {
             CPSModule.DebugMessage("OnDelivery called.", log);
