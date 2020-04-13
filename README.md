@@ -15,12 +15,14 @@ After it is savegame compatible, I will post it to [Nexus](https://www.nexusmods
     * Threatening - Chance to slightly reduce relation and gain Charm xp
 
 ### Features being considered:
+* Configurable courier fees, delivery speed, relation & skill success rates
 * Command - missives to companions and vassals to direct them where to go
   * Examples may include: "Follow me", "Patrol near Danustica", "Raid enemy villages", "Capture Ergeon"
 * add mounted courier troop that will deliver missives
 * add quest type - mail courier
 * initiate dialogue and filter out ones that don't make sense when not in person
 * integrate with steam friends list for sending messages to friends
+
 
 ## Module Unblocker
 A script to unblock dll's in other mods directories.  Available on [Nexus](https://www.nexusmods.com/mountandblade2bannerlord/mods/181/)

@@ -13,10 +13,12 @@ using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
-    [SaveableClass(555552)]
     public class MissiveThreat : MissiveBase, IMissive
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(MissiveThreat));
+
+        public MissiveThreat() { }
+        public MissiveThreat(MissiveSyncData data) : base(data) { }
 
         public override void OnDelivery()
         {

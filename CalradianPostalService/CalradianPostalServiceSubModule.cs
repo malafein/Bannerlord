@@ -101,8 +101,7 @@ namespace CalradianPostalService
         protected override void OnBeforeInitialModuleScreenSetAsRoot()
         {
             base.OnBeforeInitialModuleScreenSetAsRoot();
-
-            DebugMessage("OnBeforeInitialModuleScreenSetAsRoot called.");
+            //DebugMessage("OnBeforeInitialModuleScreenSetAsRoot called.");
 
             string versionInfo = $"CalradianPostalService Version {Version} loaded.";
             InfoMessage(versionInfo);
@@ -112,13 +111,19 @@ namespace CalradianPostalService
         {
             base.OnGameStart(game, gameStarterObject);
 
-            DebugMessage("OnGameStart called.");
-            if(game.GameType is Campaign)
+            try
             {
-                CampaignGameStarter campaignGameStarter = gameStarterObject as CampaignGameStarter;
-                MBObjectManager.Instance.RegisterType<MissiveBase>("Missive", "Missives", false);
-                campaignGameStarter.AddModel(new DefaultPostalServiceModel());
-                campaignGameStarter.AddBehavior(new PostalServiceBehavior());
+                DebugMessage("OnGameStart called.");
+                if (game.GameType is Campaign)
+                {
+                    CampaignGameStarter campaignGameStarter = gameStarterObject as CampaignGameStarter;
+                    campaignGameStarter.AddModel(new DefaultPostalServiceModel());
+                    campaignGameStarter.AddBehavior(new PostalServiceBehavior());
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugMessage(ex);
             }
         }
 
@@ -130,7 +135,7 @@ namespace CalradianPostalService
             try
             {
                 XmlConfigurator.Configure(new System.IO.FileInfo($"{ModuleDataPath}/log4net.config.xml"));
-                DebugMessage("OnSubModuleLoad called.");
+                //DebugMessage("OnSubModuleLoad called.");
             }
             catch(Exception exception1)
             {
@@ -147,6 +152,7 @@ namespace CalradianPostalService
                     message = null;
                 }
                 System.Windows.Forms.MessageBox.Show(string.Concat("Error:\n", str, " \n\n", message));
+                DebugMessage(message);
             }
         }
 
@@ -162,6 +168,11 @@ namespace CalradianPostalService
 #if DEBUG
             DebugMessage(msg, log);
 #endif
+        }
+
+        private static void DebugMessage(Exception ex)
+        {
+            DebugMessage(ex, log);
         }
 
         internal static void DebugMessage(string msg, ILog log)
