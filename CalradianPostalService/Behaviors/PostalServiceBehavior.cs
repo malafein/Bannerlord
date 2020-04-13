@@ -230,7 +230,7 @@ namespace CalradianPostalService.Behaviors
                 if (dataStore.IsSaving)
                 {
                     // TODO: fix this, it's throwing exception when the list is empty.
-                    List<MissiveSyncData> sync = (from m in _missives select new MissiveSyncData(m)).DefaultIfEmpty().ToList();
+                    List<MissiveSyncData> sync = (from m in _missives select new MissiveSyncData(m)).ToList();
                     _missiveSyncData = JsonConvert.SerializeObject(sync, settings);
                     dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
                 }
@@ -238,7 +238,7 @@ namespace CalradianPostalService.Behaviors
                 {
                     dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
                     List<MissiveSyncData> sync = JsonConvert.DeserializeObject(_missiveSyncData, settings) as List<MissiveSyncData>;
-                    _missives = (from m in sync where m.TypeName == "MissiveFriendly" select new MissiveFriendly(m)).DefaultIfEmpty().ToList<IMissive>();
+                    _missives = (from m in sync where m.TypeName == "MissiveFriendly" select new MissiveFriendly(m)).ToList<IMissive>();
                     _missives.AddRange((from m in sync where m.TypeName == "MissiveThreat" select new MissiveThreat(m)));
                     _missives.AddRange((from m in sync where m.TypeName == "MissiveCommand" select new MissiveCommand(m)));
                 }

@@ -125,6 +125,7 @@ if not exist "%25bin_dir%25" mkdir "%25bin_dir%25"
 if not exist "%25data_dir%25" mkdir "%25data_dir%25"
 
 copy "$(TargetDir)$(ProjectName).dll" "%25bin_dir%25"
+copy "$(TargetDir)$(ProjectName).pdb" "%25bin_dir%25"
 copy "$(TargetDir)log4net.dll" "%25bin_dir%25"
 copy "$(TargetDir)0Harmony.dll" "%25bin_dir%25"
 copy "$(ProjectDir)\SubModule.xml" "%25mod_dir%25"
