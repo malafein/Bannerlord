@@ -204,7 +204,7 @@ namespace CalradianPostalService.Behaviors
                     {
                         // missive delivered
                         _missives[i].OnDelivery();
-                        CPSModule.DebugMessage($"missive delivered from {_missives[i].Sender.Name} to {_missives[i].Recipient.Name}: {_missives[i].Text}", log);
+                        CPSModule.DebugMessage($"Missive delivered from {_missives[i].Sender.Name} to {_missives[i].Recipient.Name}: {_missives[i].Text}", log);
                         _missives.RemoveAt(i);
                     }
                 }
@@ -229,6 +229,7 @@ namespace CalradianPostalService.Behaviors
 
                 if (dataStore.IsSaving)
                 {
+                    // TODO: fix this, it's throwing exception when the list is empty.
                     List<MissiveSyncData> sync = (from m in _missives select new MissiveSyncData(m)).DefaultIfEmpty().ToList();
                     _missiveSyncData = JsonConvert.SerializeObject(sync, settings);
                     dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
