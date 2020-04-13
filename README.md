@@ -3,9 +3,9 @@ Mods for Mount &amp; Blade II: Bannerlord
 
 ## Calradian Postal Service
 A courier service that can be used to send missives between heroes in game, exercising their Charm skill and affecting relations.
-For now, **DO NOT INSTALL THIS MOD.**  Until I finish integrating it with the save system, you either won't be able to save your game or it may corrupt a save.
+This mod is still in early development, so I don't recommend installing in your main save.  Feel free to check it out and provide feedback.
 
-After it is savegame compatible, I will post it to [Nexus](https://www.nexusmods.com/mountandblade2bannerlord/mods/).
+Will be available on [Nexus](https://www.nexusmods.com/mountandblade2bannerlord/mods/) after a few more missive types are implemented.
 
 ### Features in development:
 * New game menu added to towns to find a courier
@@ -16,6 +16,8 @@ After it is savegame compatible, I will post it to [Nexus](https://www.nexusmods
 
 ### Features being considered:
 * Configurable courier fees, delivery speed, relation & skill success rates
+* Diplomatic missives
+  * War, Peace, Alliance, Marriage, Trade, Request Troops, Request Support (influence), Request to Join War
 * Command - missives to companions and vassals to direct them where to go
   * Examples may include: "Follow me", "Patrol near Danustica", "Raid enemy villages", "Capture Ergeon"
 * add mounted courier troop that will deliver missives
