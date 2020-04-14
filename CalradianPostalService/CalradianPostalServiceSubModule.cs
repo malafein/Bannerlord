@@ -7,6 +7,7 @@ using log4net;
 using log4net.Config;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
+using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 using CalradianPostalService.Models;
@@ -16,6 +17,7 @@ namespace CalradianPostalService
 {
     public class CalradianPostalServiceSubModule : MBSubModuleBase
     {
+        // TODO: read Version from SubModule.xml in OnSubModuleLoad
         public static string Version => "e1.0.0";
 
         public static PostalServiceModel PostalServiceModel => (from m in Campaign.Current.Models.GetGameModels() where m is PostalServiceModel select m).FirstOrDefault() as PostalServiceModel;
@@ -23,8 +25,9 @@ namespace CalradianPostalService
         public static Color InfoColor = new Color(0.25f, 0.8f, 0.8f);
         public static Color ErrorColor = new Color(0.8f, 0.0f, 0.0f);
 
-        private static string ModulePath = $"{BasePath.Name}/Modules/CalradianPostalService";
-        private static string ModuleDataPath = $"{ModulePath}/ModuleData";
+        public static readonly string ModuleName = "CalradianPostalService";
+        public static readonly string ModulePath = $"{BasePath.Name}/Modules/{ModuleName}";   // Game Modules folder
+        public static readonly string ModuleDataPath = $"{ModulePath}/ModuleData";
 
         private static readonly ILog log = LogManager.GetLogger(typeof(CalradianPostalServiceSubModule));
 
@@ -135,7 +138,7 @@ namespace CalradianPostalService
             try
             {
                 XmlConfigurator.Configure(new System.IO.FileInfo($"{ModuleDataPath}/log4net.config.xml"));
-                //DebugMessage("OnSubModuleLoad called.");
+                ModuleConfiguration.LoadConfiguration();
             }
             catch(Exception exception1)
             {
@@ -202,6 +205,12 @@ namespace CalradianPostalService
         {
             InformationManager.DisplayMessage(new InformationMessage(msg, ErrorColor));
             log?.Info(msg);
+        }
+
+        internal static void ErrorMessage(Exception exception, string msg, ILog log = null)
+        {
+            InformationManager.DisplayMessage(new InformationMessage(msg, ErrorColor));
+            log.Error($"{msg}\n{exception.Message}\n{exception.InnerException.Message}");
         }
     }
 }

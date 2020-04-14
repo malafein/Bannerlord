@@ -76,6 +76,10 @@
     <Reference Include="TaleWorlds.Core">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Core.dll</HintPath>
     </Reference>
+    <Reference Include="TaleWorlds.Engine, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Engine.dll</HintPath>
+    </Reference>
     <Reference Include="TaleWorlds.Library">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Library.dll</HintPath>
     </Reference>
@@ -103,6 +107,7 @@
     <Compile Include="Models\MissiveSyncData.cs" />
     <Compile Include="Models\MissiveThreat.cs" />
     <Compile Include="Models\PostalServiceModel.cs" />
+    <Compile Include="ModuleConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="ModuleData\CalradianPostalService.config.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

@@ -2,7 +2,7 @@
 <Module>
   <Name value="Calradian Postal Service"/>
   <Id value="CalradianPostalService"/>
-  <Version value="e1.0.0"/>
+  <Version value="e1.0.0.0"/>
   <SingleplayerModule value="true"/>
   <MultiplayerModule value="false"/>
   <Official value="false"/>

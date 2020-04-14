@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,12 +7,15 @@ using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
 
+using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
+
 namespace CalradianPostalService.Models
 {
     class DefaultPostalServiceModel : PostalServiceModel
     {
-        const float CourierRate = 1.0f;
-        const float MissiveDeliveryRate = 1.0f;
+        private static readonly ILog log = LogManager.GetLogger(typeof(DefaultPostalServiceModel));
+
+        private readonly ModuleConfiguration.PostalServiceModelOptions config = ModuleConfiguration.Instance.PostalService;
 
         public override MBReadOnlyList<Hero> GetValidMissiveRecipients(Hero hero)
         {
@@ -30,15 +34,43 @@ namespace CalradianPostalService.Models
 
         public override int GetCourierFee(Hero sender, Hero recipient)
         {
-            // calculate fee based on distance.
-            float distance = sender.GetPosition().Distance(recipient.GetPosition());
+            // calculate fee based on renown.
+            float multiplier = 1.0f;
+            if (config.RenownAffectsCourierFee)
+            {
+                float renownRate = Math.Max(recipient.Clan.Renown, config.MinimumRenownAffectingFee) / Math.Max(sender.Clan.Renown, config.MinimumRenownAffectingFee);
+                multiplier = renownRate * multiplier;
+                CPSModule.DebugMessage($"renown rate: {renownRate}", log);
+            }
 
-            return (int)Math.Ceiling(CourierRate * distance);
+            // calculate fee based on distance.
+            if (config.DistanceAffectsCourierFee)
+            {
+                float distance = sender.GetPosition().Distance(recipient.GetPosition());
+                multiplier = multiplier * distance;
+                CPSModule.DebugMessage($"distance: {distance}", log);
+            }
+
+            CPSModule.DebugMessage($"total fee multiplier: {multiplier}", log);
+
+            int fee = (int)Math.Ceiling(config.CourierRate * multiplier);
+            if (config.MaximumCourierFee >= 0)
+                fee = Math.Min(fee, config.MaximumCourierFee);
+
+            return Math.Max(fee, config.MinimumCourierFee);
         }
 
         public override CampaignTime GetMissiveDeliveryTime(Hero sender, Hero recipient)
         {
-            return CampaignTime.DaysFromNow(MissiveDeliveryRate); // TODO: get arrival time based on distance
+            float days = 1.0f;
+            if (config.DistanceAffectsDeliveryTime)
+            {
+                days = sender.GetPosition().Distance(recipient.GetPosition()) / config.MissiveDistancePerDay;
+            }
+
+            CPSModule.DebugMessage($"Delivery will take {days} days.", log);
+
+            return CampaignTime.DaysFromNow(config.MissiveDeliveryRate * days);
         }
 
         public override bool IsValidRecipientOfCommand(Hero sender, Hero recipient)
