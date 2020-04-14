@@ -33,6 +33,7 @@ namespace CalradianPostalService.Models
                     CPSModule.InfoMessage($"{Recipient} was angered your letter.");
                 }
 
+                // TODO: negative relations, be default, do not give charm xp, so this will need to be added here
                 ChangeRelationAction.ApplyRelationChangeBetweenHeroes(Sender, Recipient, -1);
             }
             else if (Hero.MainHero == Sender)
