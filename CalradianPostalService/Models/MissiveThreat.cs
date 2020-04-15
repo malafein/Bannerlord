@@ -22,7 +22,8 @@ namespace CalradianPostalService.Models
 
         public override void OnDelivery()
         {
-            CPSModule.DebugMessage("OnDelivery called.", log);
+            base.OnDelivery();
+
             float relationWithSender = (float)Recipient.GetRelation(Sender);
             float roll = MBRandom.RandomFloat;
             CPSModule.DebugMessage($"relationWithSender: {relationWithSender}, roll: {roll}", log);
@@ -40,11 +41,6 @@ namespace CalradianPostalService.Models
             {
                 CPSModule.InfoMessage($"{Recipient} received your letter, but was not impressed.");
             }
-        }
-
-        public override void OnReturn()
-        {
-            CPSModule.DebugMessage("OnReturn called.", log);
         }
     }
 }

@@ -213,7 +213,7 @@ namespace CalradianPostalService.Behaviors
                 args.Tooltip = new TextObject($"You're already at war with {_recipientSelected.MapFaction.Name}.");
                 args.IsEnabled = false;
             }
-            else if (ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence)
+            else if (ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence && !ModuleConfiguration.Instance.Missives.AllowDeclareWarWithInsufficientInfluence)
             {
                 int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Hero.MainHero.Clan.Kingdom);
                 if (Hero.MainHero.Clan.Influence < influenceCost)
@@ -251,7 +251,7 @@ namespace CalradianPostalService.Behaviors
                 args.Tooltip = new TextObject($"You're already at peace with {_recipientSelected.MapFaction.Name}.");
                 args.IsEnabled = false;
             }
-            else if (ModuleConfiguration.Instance.Missives.OfferPeaceCostsInfluence)
+            else if (ModuleConfiguration.Instance.Missives.OfferPeaceCostsInfluence && !ModuleConfiguration.Instance.Missives.AllowOfferPeaceWithInsufficientInfluence)
             {
                 int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace();
                 if (Hero.MainHero.Clan.Influence < influenceCost)
@@ -330,7 +330,7 @@ namespace CalradianPostalService.Behaviors
                 var element = targets.First<InquiryElement>();
                 _joinWarTarget = (from f in Campaign.Current.Factions where f.StringId == element.Identifier.ToString() select f).First();                
                 SendMissive<MissiveJoinWar>($"Will you join me in war against {_joinWarTarget.Name}?");
-                GameMenu.SwitchToMenu("cps_town_courier_diplomacy");
+                GameMenu.SwitchToMenu("cps_town_courier");
             }
             catch (Exception ex)
             {
@@ -373,7 +373,7 @@ namespace CalradianPostalService.Behaviors
             campaignGameStarter.AddGameMenuOption("cps_town_courier_missive", "cps_town_courier_missive_back", "{=qWAmxyYz}Back to town center", new GameMenuOption.OnConditionDelegate(back_on_condition), (MenuCallbackArgs x) => GameMenu.SwitchToMenu("town"), true, -1, false);
 
             campaignGameStarter.AddGameMenu("cps_town_courier_diplomacy", "With {CPS_MISSIVE_RECIPIENT} declared as the recipient, the agent is now ready to accept your missive. The fee for this service will be {CPS_AMOUNT}{GOLD_ICON}.", new OnInitDelegate(cps_town_courier_diplomacy_on_init), 0, GameMenu.MenuFlags.none, null);
-            if (ModuleConfiguration.Instance.EnableDeclareWarMissives)
+            if (ModuleConfiguration.Instance.EnableDeclareWarMissives) // TODO: Move to a different menu and get a different list of valid recipients.  Should be able to declare war regardless of whether the faction leader is a prisoner. Select faction instead, and have recipient be either the ruler or clan leader with highest influence.
                 campaignGameStarter.AddGameMenuOption("cps_town_courier_diplomacy", "cps_town_courier_diplomacy_war", "Send a declaration of war.", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_diplomacy_war_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_diplomacy_war_on_consequence), false, -1, false);
             if (ModuleConfiguration.Instance.EnablePeaceMissives)
                 campaignGameStarter.AddGameMenuOption("cps_town_courier_diplomacy", "cps_town_courier_diplomacy_peace", "Send an offer for peace.", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_diplomacy_peace_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_diplomacy_peace_on_consequence), false, -1, false);

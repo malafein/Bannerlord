@@ -34,6 +34,9 @@
   "Missives": {
     "RenownAffectsRelationChange": false, // if true, Difference in Renown will affect the odds of success when sending friendly or threatening missives (not implemented)
     "DeclareWarCostsInfluence": true, // if true, declaring war with a diplomacy missive costs influence the same as it would normally
-    "OfferPeaceCostsInfluence": true // if true, offering peace with a diplomacy missive costs influence the same as it would normally
+    "AllowDeclareWarWithInsufficientInfluence": true, // if true, allows you to declare war even if it results in Influence becoming negative
+    "OfferPeaceCostsInfluence": true, // if true, offering peace with a diplomacy missive costs influence the same as it would normally
+    "AllowOfferPeaceWithInsufficientInfluence": true, // if true, allows you to offer peace even if it results in Influence becoming negative
+    "JoinWarDecisionFactor": 1.0 // multiplied in decision of whether recipient agrees. % Chance to agree = relationWithSender / 100 * JoinWarDecisionFactor
   }
 }

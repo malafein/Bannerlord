@@ -42,7 +42,10 @@ namespace CalradianPostalService
 
             // Diplomacy Missives
             public bool DeclareWarCostsInfluence = true;
+            public bool AllowDeclareWarWithInsufficientInfluence = true;
             public bool OfferPeaceCostsInfluence = true;
+            public bool AllowOfferPeaceWithInsufficientInfluence = true;
+            public float JoinWarDecisionFactor = 1.0f;
         }
 
         public int ConfigVersion = 1;

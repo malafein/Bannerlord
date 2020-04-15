@@ -21,16 +21,19 @@ namespace CalradianPostalService.Models
 
         public override void OnDelivery()
         {
+            base.OnDelivery();
             throw new NotImplementedException();
         }
 
         public override void OnReturn()
         {
+            base.OnReturn();
             throw new NotImplementedException();
         }
 
         public override void OnSend()
         {
+            base.OnSend();
             throw new NotImplementedException();
         }
     }
