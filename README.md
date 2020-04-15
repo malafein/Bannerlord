@@ -13,11 +13,13 @@ Will be available on [Nexus](https://www.nexusmods.com/mountandblade2bannerlord/
   * Choose a type of missive to send and pay a fee based on distance
     * Friendly - Chance to slightly improve relation and gain Charm xp
     * Threatening - Chance to slightly reduce relation and gain Charm xp
+    * Diplomacy missives:
+      * War, Peace, Request to Join War
 * Configurable courier fees, delivery speed, relation & skill success rates
 
 ### Planned Features:
 * Diplomatic missives
-  * War, Peace, Alliance, Marriage, Trade, Request Troops, Request Support (influence), Request to Join War
+  * Alliance, Marriage, Trade, Request Troops, Request Support (influence)
 * Command - missives to companions and vassals to direct them where to go
   * Examples may include: "Follow me", "Patrol near Danustica", "Raid enemy villages", "Capture Ergeon"
 * add mounted courier troop that will deliver missives
