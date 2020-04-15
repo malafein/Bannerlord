@@ -36,10 +36,19 @@ namespace CalradianPostalService.Models
         {
             // TODO: expand this list when more types of diplomacy missives are implemented or create new submenus
             var validRecipients = (from h in Hero.All
-                                   where h.HasMet && h.IsAlive && !h.IsPrisoner && h == h.MapFaction.Leader
+                                   where h.HasMet && h.IsAlive && !h.IsPrisoner && sender.MapFaction != h.MapFaction
                                    orderby h.Name.ToString()
                                    select h).DefaultIfEmpty().ToList();
             return new MBReadOnlyList<Hero>(validRecipients);
+        }
+
+        public override MBReadOnlyList<IFaction> GetValidJoinWarTargets(Hero sender, Hero recipient)
+        {
+            var validTargets = (from f in Campaign.Current.Factions
+                                where sender.MapFaction.IsAtWarWith(f) && !recipient.MapFaction.IsAtWarWith(f) && !f.IsBanditFaction
+                                orderby f.Name.ToString()
+                                select f).DefaultIfEmpty().ToList();
+            return new MBReadOnlyList<IFaction>(validTargets);
         }
 
         public override int GetCourierFee(Hero sender, Hero recipient)

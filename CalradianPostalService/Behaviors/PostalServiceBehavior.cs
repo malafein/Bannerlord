@@ -23,6 +23,7 @@ namespace CalradianPostalService.Behaviors
         private static readonly ILog log = LogManager.GetLogger(typeof(PostalServiceBehavior));
 
         private Hero _recipientSelected;
+        private IFaction _joinWarTarget;
 
         private List<IMissive> _missives = new List<IMissive>();
         private string _missiveSyncData;
@@ -172,7 +173,19 @@ namespace CalradianPostalService.Behaviors
         private void game_menu_cps_town_courier_diplomacy_join_war_on_consequence(MenuCallbackArgs args)
         {
             // TODO: implement join war
-            CPSModule.DebugMessage("Request to join war selected.", log);
+            try
+            {
+                var targets = PostalServiceModel.GetValidJoinWarTargets(Hero.MainHero, _recipientSelected);
+                var elements = (from t in targets select new InquiryElement(t.StringId, t.Name.ToString(), new ImageIdentifier(t.Banner))).DefaultIfEmpty().ToList();
+
+                InformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Target",
+                    "Against which enemy do we want {CPS_MISSIVE_RECIPIENT} to join us?", elements, true, true,
+                    "Continue", "Cancel", OnSelectWarTarget, (List<InquiryElement> r) => { }));
+            }
+            catch (Exception ex)
+            {
+                CPSModule.DebugMessage(ex, log);
+            }
         }
 
         private bool game_menu_cps_town_courier_diplomacy_war_on_condition(MenuCallbackArgs args)
@@ -230,7 +243,7 @@ namespace CalradianPostalService.Behaviors
             }
             else if (_recipientSelected != _recipientSelected.MapFaction.Leader)
             {
-                args.Tooltip = new TextObject("You may only send declarations of war to other rulers.");
+                args.Tooltip = new TextObject("You may only send offers of peace to other faction leaders.");
                 args.IsEnabled = false;
             }
             else if (!_recipientSelected.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
@@ -259,16 +272,6 @@ namespace CalradianPostalService.Behaviors
             if (Hero.MainHero.Gold < courierFee)
             {
                 args.Tooltip = new TextObject("{=d0kbtGYn}You don't have enough gold.", null);
-                args.IsEnabled = false;
-            }
-            else if (Hero.MainHero != Hero.MainHero.MapFaction.Leader)
-            {
-                args.Tooltip = new TextObject("Only rulers may send diplmatic missives of this nature.");
-                args.IsEnabled = false;
-            }
-            else if (_recipientSelected != _recipientSelected.MapFaction.Leader)
-            {
-                args.Tooltip = new TextObject("You may only send declarations of war to other rulers.");
                 args.IsEnabled = false;
             }
             else if (_recipientSelected.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
@@ -313,6 +316,21 @@ namespace CalradianPostalService.Behaviors
                 MBTextManager.SetTextVariable("CPS_MISSIVE_RECIPIENT", recipient.Name);
                 _recipientSelected = recipient;
                 GameMenu.SwitchToMenu("cps_town_courier_missive");
+            }
+            catch (Exception ex)
+            {
+                CPSModule.DebugMessage(ex, log);
+            }
+        }
+
+        private void OnSelectWarTarget(List<InquiryElement> targets)
+        {
+            try
+            {
+                var element = targets.First<InquiryElement>();
+                _joinWarTarget = (from f in Campaign.Current.Factions where f.StringId == element.Identifier.ToString() select f).First();                
+                SendMissive<MissiveJoinWar>($"Will you join me in war against {_joinWarTarget.Name}?");
+                GameMenu.SwitchToMenu("cps_town_courier_diplomacy");
             }
             catch (Exception ex)
             {

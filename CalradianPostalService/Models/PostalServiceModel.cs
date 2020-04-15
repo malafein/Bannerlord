@@ -17,6 +17,8 @@ namespace CalradianPostalService.Models
 
         public abstract MBReadOnlyList<Hero> GetValidDiplomacyRecipients(Hero sender);
 
+        public abstract MBReadOnlyList<IFaction> GetValidJoinWarTargets(Hero sender, Hero recipient);
+
         public abstract int GetCourierFee(Hero sender, Hero recipient);
 
         public abstract CampaignTime GetMissiveDeliveryTime(Hero sender, Hero recipient);
