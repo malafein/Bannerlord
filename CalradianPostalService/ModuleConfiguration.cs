@@ -37,14 +37,19 @@ namespace CalradianPostalService
 
         public class MissiveOptions
         {
+            // TODO: Friendly / Threatening Missive
             public bool RenownAffectsRelationChange = false;
+
+            // Diplomacy Missives
+            public bool DeclareWarCostsInfluence = true;
+            public bool OfferPeaceCostsInfluence = true;
         }
 
         public int ConfigVersion = 1;
         public bool EnableFriendlyMissives = true;
         public bool EnableThreateningMissives = true;
         public bool EnableCommandMissives = true;
-        public bool EnableDeclareWarMissives = false;
+        public bool EnableDeclareWarMissives = true;
         public bool EnablePeaceMissives = true;
         public bool EnableRequestWarMissives = true;
 

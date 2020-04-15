@@ -31,12 +31,10 @@ namespace CalradianPostalService.Models
 
         public virtual void OnDelivery()
         {
-            throw new NotImplementedException();
         }
 
         public virtual void OnReturn()
         {
-            throw new NotImplementedException();
         }
 
         public virtual void OnSend()

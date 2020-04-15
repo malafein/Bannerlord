@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -129,8 +130,6 @@ namespace CalradianPostalService.Behaviors
         public void game_menu_cps_town_courier_missive_friendly_on_consequence(MenuCallbackArgs args)
         {
             // create and send the missive
-            CPSModule.DebugMessage("Friendly Missive selected.", log);
-
             InformationManager.ShowTextInquiry(new TextInquiryData("Enter a brief message:", "", true, false, "Send", "Cancel",
                 (string s) => { SendMissive<MissiveFriendly>(s); }, null));
 
@@ -140,8 +139,6 @@ namespace CalradianPostalService.Behaviors
         public void game_menu_cps_town_courier_missive_threat_on_consequence(MenuCallbackArgs args)
         {
             // create and send the missive
-            CPSModule.DebugMessage("Threatening Missive selected.", log);
-
             InformationManager.ShowTextInquiry(new TextInquiryData("Let them know how you really feel:", "", true, false, "Send", "Cancel",
                 (string s) => { SendMissive<MissiveThreat>(s); }, null));
 
@@ -160,14 +157,16 @@ namespace CalradianPostalService.Behaviors
 
         private void game_menu_cps_town_courier_diplomacy_war_on_consequence(MenuCallbackArgs args)
         {
-            // TODO: implement war declaration
-            CPSModule.DebugMessage("Declare War selected.", log);
+            SendMissive<MissiveWar>("This is a declaration of war.");
+
+            GameMenu.SwitchToMenu("cps_town_courier");
         }
 
         private void game_menu_cps_town_courier_diplomacy_peace_on_consequence(MenuCallbackArgs args)
         {
-            // TODO: implement peace offer
-            CPSModule.DebugMessage("Peace offer selected.", log);
+            SendMissive<MissivePeace>("Let's end this war.");
+
+            GameMenu.SwitchToMenu("cps_town_courier");
         }
 
         private void game_menu_cps_town_courier_diplomacy_join_war_on_consequence(MenuCallbackArgs args)
@@ -201,6 +200,15 @@ namespace CalradianPostalService.Behaviors
                 args.Tooltip = new TextObject($"You're already at war with {_recipientSelected.MapFaction.Name}.");
                 args.IsEnabled = false;
             }
+            else if (ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence)
+            {
+                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Hero.MainHero.Clan.Kingdom);
+                if (Hero.MainHero.Clan.Influence < influenceCost)
+                {
+                    args.Tooltip = new TextObject($"You do not have enough influence ({influenceCost}) to declare war.");
+                    args.IsEnabled = false;
+                }
+            }
 
             return true;
         }
@@ -229,6 +237,15 @@ namespace CalradianPostalService.Behaviors
             {
                 args.Tooltip = new TextObject($"You're already at peace with {_recipientSelected.MapFaction.Name}.");
                 args.IsEnabled = false;
+            }
+            else if (ModuleConfiguration.Instance.Missives.OfferPeaceCostsInfluence)
+            {
+                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace();
+                if (Hero.MainHero.Clan.Influence < influenceCost)
+                {
+                    args.Tooltip = new TextObject($"You do not have enough influence ({influenceCost}) to make a peace offer.");
+                    args.IsEnabled = false;
+                }
             }
 
             return true;
@@ -267,7 +284,7 @@ namespace CalradianPostalService.Behaviors
         {
             try
             {
-                CPSModule.DebugMessage($"You entered: {s}", log);
+                CPSModule.InfoMessage($"You send a missive to {_recipientSelected}: {s}", log);
                 var missive = new T
                 {
                     Sender = Hero.MainHero,

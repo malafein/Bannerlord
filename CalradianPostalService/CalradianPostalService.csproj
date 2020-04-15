@@ -104,8 +104,10 @@
     <Compile Include="Models\MissiveCommand.cs" />
     <Compile Include="Models\MissiveFriendly.cs" />
     <Compile Include="Models\IMissive.cs" />
+    <Compile Include="Models\MissivePeace.cs" />
     <Compile Include="Models\MissiveSyncData.cs" />
     <Compile Include="Models\MissiveThreat.cs" />
+    <Compile Include="Models\MissiveWar.cs" />
     <Compile Include="Models\PostalServiceModel.cs" />
     <Compile Include="ModuleConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
