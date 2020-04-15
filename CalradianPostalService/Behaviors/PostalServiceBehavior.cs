@@ -393,6 +393,9 @@ namespace CalradianPostalService.Behaviors
                 {
                     if (_missives[i].CampaignTimeArrival <= CampaignTime.Now)
                     {
+                        // TODO: Some missives will require a reply, so need to check to see if one is required, then queue the response
+                        //       if out for delivery, do OnDelivery.  if returning with reply, do OnReturn
+
                         // missive delivered
                         _missives[i].OnDelivery();
                         CPSModule.DebugMessage($"Missive delivered from {_missives[i].Sender.Name} to {_missives[i].Recipient.Name}: {_missives[i].Text}", log);

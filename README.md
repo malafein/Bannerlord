@@ -28,6 +28,7 @@ Will be available on [Nexus](https://www.nexusmods.com/mountandblade2bannerlord/
 ### Features being considered:
 * initiate dialogue and filter out ones that don't make sense when not in person
 * integrate with steam friends list for sending messages to friends
+  * I haven't thought of a real purpose for this yet, but am curious to look into it.  Maybe some sort of international trade? Or just another way to build Charm xp?
 
 
 ## Module Unblocker

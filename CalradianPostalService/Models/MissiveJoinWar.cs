@@ -18,7 +18,7 @@ namespace CalradianPostalService.Models
         {
             base.OnDelivery();
 
-            // If the recipient likes you well enough, and approves of war, then they will propose it to their faction
+            // If the recipient likes you well enough and approves of war, then they will propose it to their faction
             CalradianPostalServiceSubModule.DebugMessage("TODO: implement MissiveJoinWar.OnDelivery", log);
         }
     }
