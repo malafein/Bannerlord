@@ -17,9 +17,9 @@ namespace CalradianPostalService.Models
 
         private readonly ModuleConfiguration.PostalServiceModelOptions config = ModuleConfiguration.Instance.PostalService;
 
-        public override MBReadOnlyList<Hero> GetValidMissiveRecipients(Hero hero)
+        public override MBReadOnlyList<Hero> GetValidMissiveRecipients(Hero sender)
         {
-            if (hero.IsHumanPlayerCharacter)
+            if (sender.IsHumanPlayerCharacter)
             {
                 var validRecipients = (from h in Hero.All
                                        where h.HasMet && h.IsAlive && !h.IsPrisoner
@@ -30,6 +30,16 @@ namespace CalradianPostalService.Models
 
             // TODO: find valid recipients for NPC heroes?
             return new MBReadOnlyList<Hero>(new List<Hero>());
+        }
+
+        public override MBReadOnlyList<Hero> GetValidDiplomacyRecipients(Hero sender)
+        {
+            // TODO: expand this list when more types of diplomacy missives are implemented or create new submenus
+            var validRecipients = (from h in Hero.All
+                                   where h.HasMet && h.IsAlive && !h.IsPrisoner && h == h.MapFaction.Leader
+                                   orderby h.Name.ToString()
+                                   select h).DefaultIfEmpty().ToList();
+            return new MBReadOnlyList<Hero>(validRecipients);
         }
 
         public override int GetCourierFee(Hero sender, Hero recipient)

@@ -13,7 +13,9 @@ namespace CalradianPostalService.Models
     {
         protected PostalServiceModel() { }
 
-        public abstract MBReadOnlyList<Hero> GetValidMissiveRecipients(Hero hero);
+        public abstract MBReadOnlyList<Hero> GetValidMissiveRecipients(Hero sender);
+
+        public abstract MBReadOnlyList<Hero> GetValidDiplomacyRecipients(Hero sender);
 
         public abstract int GetCourierFee(Hero sender, Hero recipient);
 

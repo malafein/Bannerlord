@@ -1,25 +1,36 @@
 {
   // Module Configuration
   "ConfigVersion": 1, // Don't change this, it will be used for maintaining updates to config
+
+  // Generic missives
   "EnableFriendlyMissives": true,
   "EnableThreateningMissives": true,
-  "EnableCommandMissives": true,
 
+  // Clan leader missives
+  "EnableCommandMissives": false, // (not yet implemented)
+
+  // Ruler missives 
+  "EnableDeclareWarMissives": false,
+  "EnablePeaceMissives": true,
+  "EnableRequestWarMissives": true,
+
+  // These settings adjust the cost and speed of delivery
   "PostalService": {
-    "CourierRate": 1.0,         // Adjust final courier fee
+    "CourierRate": 1.0, // Adjust final courier fee
     "MissiveDeliveryRate": 1.0, // Adjust how long it takes to deliver (if DistanceAffectsDeliveryTime is false, this is number of days for delivery)
 
     // Courier Fee = CourierRate * Renown Factor * Distance Factor
-    "RenownAffectsCourierFee": false,   // If true, (Recipient's Renown / Sender's Renown) is a factor for Courier Fee
-    "MinimumRenownAffectingFee": 50.0,  // Both party's renown will be treated as being no lower than this for above formula
-    "DistanceAffectsCourierFee": true,  // If true, Distance between parties is a factor for the Courier Fee
-    "MinimumCourierFee": 100,           // Courier Fee will never be less than this amount
-    "MaximumCourierFee": -1,            // Courier Fee will never be more than this amount (set to -1 for no maximum)
+    "RenownAffectsCourierFee": false, // If true, (Recipient's Renown / Sender's Renown) is a factor for Courier Fee
+    "MinimumRenownAffectingFee": 50.0, // Both party's renown will be treated as being no lower than this for above formula
+    "DistanceAffectsCourierFee": true, // If true, Distance between parties is a factor for the Courier Fee
+    "MinimumCourierFee": 100, // Courier Fee will never be less than this amount
+    "MaximumCourierFee": -1, // Courier Fee will never be more than this amount (set to -1 for no maximum)
 
     "DistanceAffectsDeliveryTime": false, // if true, delivery time will be Distance / MissiveDistancePerDay * MissiveDeliveryRate
     "MissiveDistancePerDay": 1000.0
   },
 
+  // These settings will affect specific missives
   "Missives": {
     "RenownAffectsRelationChange": false // if true, Difference in Renown will affect the odds of success when sending friendly or threatening missives (not implemented)
   }

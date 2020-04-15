@@ -44,6 +44,9 @@ namespace CalradianPostalService
         public bool EnableFriendlyMissives = true;
         public bool EnableThreateningMissives = true;
         public bool EnableCommandMissives = true;
+        public bool EnableDeclareWarMissives = false;
+        public bool EnablePeaceMissives = true;
+        public bool EnableRequestWarMissives = true;
 
         private ModuleConfiguration(){}
 
