@@ -19,6 +19,8 @@ namespace CalradianPostalService.Models
         public Hero Sender { get; set; }
         public string Text { get; set; }
 
+        public Dictionary<object, object> Args { get; set; }
+
         protected MissiveBase() { }
         protected MissiveBase(MissiveSyncData data) 
         {
@@ -27,6 +29,7 @@ namespace CalradianPostalService.Models
             Recipient = Hero.FindFirst((Hero h) => { return h.StringId == data.RecipientId; });
             Sender = Hero.FindFirst((Hero h) => { return h.StringId == data.SenderId; });
             Text = data.Text;
+            Args = data.Args;
         }
 
         public virtual void OnDelivery()

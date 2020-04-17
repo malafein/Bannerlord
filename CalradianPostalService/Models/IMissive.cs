@@ -21,6 +21,8 @@ namespace CalradianPostalService.Models
 
         string Text { get; set; }
 
+        Dictionary<object,object> Args { get; set; } 
+
         void OnSend();
 
         void OnDelivery();

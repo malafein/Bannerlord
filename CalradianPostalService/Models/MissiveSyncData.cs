@@ -1,4 +1,5 @@
 ﻿using CalradianPostalService.Models;
+using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 
 namespace CalradianPostalService
@@ -17,6 +18,8 @@ namespace CalradianPostalService
 
         public string Text;
 
+        public Dictionary<object, object> Args;
+
         public MissiveSyncData(IMissive missive)
         {
             TypeName = missive.GetType().Name;
@@ -25,6 +28,7 @@ namespace CalradianPostalService
             RecipientId = missive.Recipient.StringId;
             SenderId = missive.Sender.StringId;
             Text = missive.Text;
+            Args = missive.Args;
         }
     }
 }

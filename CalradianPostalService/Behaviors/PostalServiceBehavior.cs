@@ -283,18 +283,19 @@ namespace CalradianPostalService.Behaviors
             return true;
         }
 
-        private void SendMissive<T>(string s) where T : IMissive, new()
+        private void SendMissive<T>(string missiveText, Dictionary<object, object> args = null) where T : IMissive, new()
         {
             try
             {
-                CPSModule.InfoMessage($"You send a missive to {_recipientSelected}: {s}", log);
+                CPSModule.InfoMessage($"You send a missive to {_recipientSelected}: {missiveText}", log);
                 var missive = new T
                 {
                     Sender = Hero.MainHero,
                     Recipient = _recipientSelected,
                     CampaignTimeSent = CampaignTime.Now,
                     CampaignTimeArrival = PostalServiceModel.GetMissiveDeliveryTime(Hero.MainHero, _recipientSelected),
-                    Text = s
+                    Text = missiveText,
+                    Args = args
                 };
 
                 _missives.Add(missive);
@@ -329,7 +330,8 @@ namespace CalradianPostalService.Behaviors
             {
                 var element = targets.First<InquiryElement>();
                 _joinWarTarget = (from f in Campaign.Current.Factions where f.StringId == element.Identifier.ToString() select f).First();                
-                SendMissive<MissiveJoinWar>($"Will you join me in war against {_joinWarTarget.Name}?");
+                SendMissive<MissiveJoinWar>($"Will you join me in war against {_joinWarTarget.Name}?", 
+                    new Dictionary<object, object>{ { MissiveJoinWar.Arg.TargetKingdomId, _joinWarTarget.StringId } });
                 GameMenu.SwitchToMenu("cps_town_courier");
             }
             catch (Exception ex)
