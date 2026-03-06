@@ -21,8 +21,8 @@ namespace CalradianPostalService.Models
         {
             if (sender.IsHumanPlayerCharacter)
             {
-                var validRecipients = (from h in Hero.All
-                                       where h.HasMet && h.IsAlive && !h.IsPrisoner
+                var validRecipients = (from h in Hero.AllAliveHeroes
+                                       where h.HasMet && !h.IsPrisoner
                                        orderby h.Name.ToString()
                                        select h).DefaultIfEmpty().ToList();
                 return new MBReadOnlyList<Hero>(validRecipients);
@@ -35,8 +35,8 @@ namespace CalradianPostalService.Models
         public override MBReadOnlyList<Hero> GetValidDiplomacyRecipients(Hero sender)
         {
             // TODO: expand this list when more types of diplomacy missives are implemented or create new submenus
-            var validRecipients = (from h in Hero.All
-                                   where h.HasMet && h.IsAlive && !h.IsPrisoner && sender.MapFaction != h.MapFaction && h.Clan.Leader == h
+            var validRecipients = (from h in Hero.AllAliveHeroes
+                                   where h.HasMet && !h.IsPrisoner && sender.MapFaction != h.MapFaction && h.Clan.Leader == h
                                    orderby h.Name.ToString()
                                    select h).DefaultIfEmpty().ToList();
             return new MBReadOnlyList<Hero>(validRecipients);
@@ -65,7 +65,7 @@ namespace CalradianPostalService.Models
             // calculate fee based on distance.
             if (config.DistanceAffectsCourierFee)
             {
-                float distance = sender.GetPosition().Distance(recipient.GetPosition());
+                float distance = sender.GetCampaignPosition().Distance(recipient.GetCampaignPosition());
                 multiplier = multiplier * distance;
                 CPSModule.DebugMessage($"distance: {distance}", log);
             }
@@ -84,7 +84,7 @@ namespace CalradianPostalService.Models
             float days = 1.0f;
             if (config.DistanceAffectsDeliveryTime)
             {
-                days = sender.GetPosition().Distance(recipient.GetPosition()) / config.MissiveDistancePerDay;
+                days = sender.GetCampaignPosition().Distance(recipient.GetCampaignPosition()) / config.MissiveDistancePerDay;
             }
 
             CPSModule.DebugMessage($"Delivery will take {days} days.", log);

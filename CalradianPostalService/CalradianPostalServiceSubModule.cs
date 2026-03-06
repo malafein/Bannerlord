@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using log4net;
@@ -137,7 +139,7 @@ namespace CalradianPostalService
             // TODO: read in configs and hook methods w/ harmony
             try
             {
-                XmlConfigurator.Configure(new System.IO.FileInfo($"{ModuleDataPath}/log4net.config.xml"));
+                XmlConfigurator.Configure(LogManager.GetRepository(Assembly.GetExecutingAssembly()), new FileInfo($"{ModuleDataPath}/log4net.config.xml"));
                 ModuleConfiguration.LoadConfiguration();
             }
             catch(Exception exception1)
@@ -154,7 +156,7 @@ namespace CalradianPostalService
                 {
                     message = null;
                 }
-                System.Windows.Forms.MessageBox.Show(string.Concat("Error:\n", str, " \n\n", message));
+                InformationManager.DisplayMessage(new InformationMessage(string.Concat("CPS Config Error:\n", str, " \n\n", message), ErrorColor));
                 DebugMessage(message);
             }
         }

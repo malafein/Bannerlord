@@ -31,7 +31,7 @@ namespace CalradianPostalService.Models
 
             if (ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence)
             {
-                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace();
+                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace(Sender.Clan);
                 Sender.Clan.Influence -= influenceCost;
             }
         }

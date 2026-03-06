@@ -5,8 +5,9 @@ using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.GameMenus;
-using TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors.Towns;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -20,7 +21,7 @@ namespace CalradianPostalService
         private static void Postfix(PlayerTownVisitCampaignBehavior __instance, CampaignGameStarter campaignGameSystemStarter)
         {
             campaignGameSystemStarter.AddGameMenuOption("town", "cps_town_courier", "Find a courier", new GameMenuOption.OnConditionDelegate(game_menu_town_find_courier_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_town_find_courier_on_consequence), false, 4, false);
-            campaignGameSystemStarter.AddGameMenu("cps_town_courier", "You find a Calradian Postal Service agent.  They can send a missive by raven for a small fee.", new OnInitDelegate(cps_town_courier_on_init), 0, GameMenu.MenuFlags.none, null);
+            campaignGameSystemStarter.AddGameMenu("cps_town_courier", "You find a Calradian Postal Service agent.  They can send a missive by raven for a small fee.", new OnInitDelegate(cps_town_courier_on_init), 0, GameMenu.MenuFlags.None, null);
             campaignGameSystemStarter.AddGameMenuOption("cps_town_courier", "cps_town_courier_missive", "Pay a {AMOUNT}{GOLD_ICON} fee to send the missive", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_missive_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_missive_on_consequence), false, -1, false);
             campaignGameSystemStarter.AddGameMenuOption("cps_town_courier", "cps_town_courier_back", "{=qWAmxyYz}Back to town center", new GameMenuOption.OnConditionDelegate(back_on_condition), (MenuCallbackArgs x) => GameMenu.SwitchToMenu("town"), true, -1, false);
         }
@@ -72,10 +73,10 @@ namespace CalradianPostalService
             //ImageIdentifierType.Character
 
             var contacts = PostalServiceModel.GetValidMissiveRecipients(Hero.MainHero);
-            var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new ImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).DefaultIfEmpty().ToList();
+            var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).DefaultIfEmpty().ToList();
 
-            InformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Send Missive", "To whom should we deliver this missive?", elements, true, true,
-                "Send", "Cancel", OnSendMissive, (List<InquiryElement> r) => { }));
+            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Send Missive", "To whom should we deliver this missive?", elements, true, 1, 1,
+                "Send", "Cancel", OnSendMissive, _ => { }));
         }
 
         static void OnSendMissive(List<InquiryElement> recipients)

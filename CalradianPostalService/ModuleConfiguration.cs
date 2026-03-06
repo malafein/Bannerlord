@@ -6,15 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using log4net;
 using Newtonsoft.Json;
-using TaleWorlds.Engine;
-
 using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService
 {
     public class ModuleConfiguration
     {
-        private static string ConfigsPath = System.IO.Path.Combine(Utilities.GetConfigsPath(), CPSModule.ModuleName);   // Documents folder
+        private static string ConfigsPath = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "Mount and Blade II Bannerlord", "Configs", CPSModule.ModuleName);   // Documents folder
         private static string ConfigFilePath = System.IO.Path.Combine(ConfigsPath, $"{CPSModule.ModuleName}.config.json");
         private static string DefaultConfigFilePath = System.IO.Path.Combine(CPSModule.ModuleDataPath, $"{CPSModule.ModuleName}.config.json");
 

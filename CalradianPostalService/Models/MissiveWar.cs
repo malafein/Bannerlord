@@ -26,11 +26,11 @@ namespace CalradianPostalService.Models
             base.OnSend();
 
             // TODO: should a missive be dispatched, or should the war start now?
-            DeclareWarAction.Apply(Sender.MapFaction, Recipient.MapFaction);
+            DeclareWarAction.ApplyByDefault(Sender.MapFaction, Recipient.MapFaction);
 
             if (ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence)
             {
-                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Hero.MainHero.Clan.Kingdom);
+                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Sender.Clan);
                 Sender.Clan.Influence -= influenceCost;
             }
         }

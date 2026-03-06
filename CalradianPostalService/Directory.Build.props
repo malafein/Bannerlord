@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <BannerlordPath>/home/malafein/.steam/steam/steamapps/common/Mount &amp; Blade II Bannerlord</BannerlordPath>
+    <GameBinPath>$(BannerlordPath)/bin/Win64_Shipping_Client</GameBinPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(GameBinPath)/TaleWorlds.CampaignSystem.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.Core.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.Library.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.MountAndBlade.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.Localization.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.PlayerServices.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.ObjectSystem.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.SaveSystem.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.Engine.dll" Private="false" />
+  </ItemGroup>
+</Project>

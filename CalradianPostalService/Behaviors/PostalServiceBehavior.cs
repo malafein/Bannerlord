@@ -11,6 +11,7 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Localization;
 
 using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
@@ -63,10 +64,10 @@ namespace CalradianPostalService.Behaviors
         public void game_menu_cps_town_courier_diplomacy_on_consequence(MenuCallbackArgs args)
         {
             var contacts = PostalServiceModel.GetValidDiplomacyRecipients(Hero.MainHero);
-            var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new ImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).DefaultIfEmpty().ToList();
+            var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).DefaultIfEmpty().ToList();
 
-            InformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, true,
-                "Continue", "Cancel", OnSelectDiplomacyRecipient, (List<InquiryElement> r) => { }));
+            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, 1, 1,
+                "Continue", "Cancel", OnSelectDiplomacyRecipient, _ => { }));
         }
 
         public bool game_menu_cps_town_courier_diplomacy_on_condition(MenuCallbackArgs args)
@@ -78,10 +79,10 @@ namespace CalradianPostalService.Behaviors
         public void game_menu_cps_town_courier_missive_on_consequence(MenuCallbackArgs args)
         {
             var contacts = PostalServiceModel.GetValidMissiveRecipients(Hero.MainHero);
-            var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new ImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).DefaultIfEmpty().ToList();
+            var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).DefaultIfEmpty().ToList();
 
-            InformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, true,
-                "Continue", "Cancel", OnSelectRecipient, (List<InquiryElement> r) => { }));
+            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, 1, 1,
+                "Continue", "Cancel", OnSelectRecipient, _ => { }));
         }
 
         public bool game_menu_cps_town_courier_missive_on_condition(MenuCallbackArgs args)
@@ -176,11 +177,11 @@ namespace CalradianPostalService.Behaviors
             try
             {
                 var targets = PostalServiceModel.GetValidJoinWarTargets(Hero.MainHero, _recipientSelected);
-                var elements = (from t in targets select new InquiryElement(t.StringId, t.Name.ToString(), new ImageIdentifier(t.Banner))).DefaultIfEmpty().ToList();
+                var elements = (from t in targets select new InquiryElement(t.StringId, t.Name.ToString(), new BannerImageIdentifier(t.Banner, false))).DefaultIfEmpty().ToList();
 
-                InformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Target",
-                    "Against which enemy do we want {CPS_MISSIVE_RECIPIENT} to join us?", elements, true, true,
-                    "Continue", "Cancel", OnSelectWarTarget, (List<InquiryElement> r) => { }));
+                MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Target",
+                    "Against which enemy do we want {CPS_MISSIVE_RECIPIENT} to join us?", elements, true, 1, 1,
+                    "Continue", "Cancel", OnSelectWarTarget, _ => { }));
             }
             catch (Exception ex)
             {
@@ -215,7 +216,7 @@ namespace CalradianPostalService.Behaviors
             }
             else if (ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence && !ModuleConfiguration.Instance.Missives.AllowDeclareWarWithInsufficientInfluence)
             {
-                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Hero.MainHero.Clan.Kingdom);
+                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Hero.MainHero.Clan);
                 if (Hero.MainHero.Clan.Influence < influenceCost)
                 {
                     args.Tooltip = new TextObject($"You do not have enough influence ({influenceCost}) to declare war.");
@@ -253,7 +254,7 @@ namespace CalradianPostalService.Behaviors
             }
             else if (ModuleConfiguration.Instance.Missives.OfferPeaceCostsInfluence && !ModuleConfiguration.Instance.Missives.AllowOfferPeaceWithInsufficientInfluence)
             {
-                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace();
+                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace(Hero.MainHero.Clan);
                 if (Hero.MainHero.Clan.Influence < influenceCost)
                 {
                     args.Tooltip = new TextObject($"You do not have enough influence ({influenceCost}) to make a peace offer.");
@@ -360,12 +361,12 @@ namespace CalradianPostalService.Behaviors
         {
             campaignGameStarter.AddGameMenuOption("town", "cps_town_courier", "Find a courier", new GameMenuOption.OnConditionDelegate(game_menu_town_find_courier_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_town_find_courier_on_consequence), false, 4, false);
             
-            campaignGameStarter.AddGameMenu("cps_town_courier", "You find a Calradian Postal Service agent.  They can send a missive by raven for a small fee.", new OnInitDelegate(cps_town_courier_on_init), 0, GameMenu.MenuFlags.none, null);
+            campaignGameStarter.AddGameMenu("cps_town_courier", "You find a Calradian Postal Service agent.  They can send a missive by raven for a small fee.", new OnInitDelegate(cps_town_courier_on_init), 0, GameMenu.MenuFlags.None, null);
             campaignGameStarter.AddGameMenuOption("cps_town_courier", "cps_town_courier_diplomacy", "Send diplomatic missive", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_diplomacy_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_diplomacy_on_consequence), false, -1, false);
             campaignGameStarter.AddGameMenuOption("cps_town_courier", "cps_town_courier_missive", "Send a personal letter", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_missive_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_missive_on_consequence), false, -1, false);
             campaignGameStarter.AddGameMenuOption("cps_town_courier", "cps_town_courier_back", "{=qWAmxyYz}Back to town center", new GameMenuOption.OnConditionDelegate(back_on_condition), (MenuCallbackArgs x) => GameMenu.SwitchToMenu("town"), true, -1, false);
             
-            campaignGameStarter.AddGameMenu("cps_town_courier_missive", "With {CPS_MISSIVE_RECIPIENT} declared as the recipient, the agent is now ready to accept your missive.", new OnInitDelegate(cps_town_courier_missive_on_init), 0, GameMenu.MenuFlags.none, null);
+            campaignGameStarter.AddGameMenu("cps_town_courier_missive", "With {CPS_MISSIVE_RECIPIENT} declared as the recipient, the agent is now ready to accept your missive.", new OnInitDelegate(cps_town_courier_missive_on_init), 0, GameMenu.MenuFlags.None, null);
             if (ModuleConfiguration.Instance.EnableFriendlyMissives)
                 campaignGameStarter.AddGameMenuOption("cps_town_courier_missive", "cps_town_courier_missive_friendly", "Pay a {CPS_AMOUNT}{GOLD_ICON} fee to send a friendly missive", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_missive_simple_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_missive_friendly_on_consequence), false, -1, false);
             if (ModuleConfiguration.Instance.EnableThreateningMissives)
@@ -374,7 +375,7 @@ namespace CalradianPostalService.Behaviors
                 campaignGameStarter.AddGameMenuOption("cps_town_courier_missive", "cps_town_courier_missive_command", "Pay a {CPS_AMOUNT}{GOLD_ICON} fee to send a missive containing orders", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_missive_command_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_missive_command_on_consequence), false, -1, false);
             campaignGameStarter.AddGameMenuOption("cps_town_courier_missive", "cps_town_courier_missive_back", "{=qWAmxyYz}Back to town center", new GameMenuOption.OnConditionDelegate(back_on_condition), (MenuCallbackArgs x) => GameMenu.SwitchToMenu("town"), true, -1, false);
 
-            campaignGameStarter.AddGameMenu("cps_town_courier_diplomacy", "With {CPS_MISSIVE_RECIPIENT} declared as the recipient, the agent is now ready to accept your missive. The fee for this service will be {CPS_AMOUNT}{GOLD_ICON}.", new OnInitDelegate(cps_town_courier_diplomacy_on_init), 0, GameMenu.MenuFlags.none, null);
+            campaignGameStarter.AddGameMenu("cps_town_courier_diplomacy", "With {CPS_MISSIVE_RECIPIENT} declared as the recipient, the agent is now ready to accept your missive. The fee for this service will be {CPS_AMOUNT}{GOLD_ICON}.", new OnInitDelegate(cps_town_courier_diplomacy_on_init), 0, GameMenu.MenuFlags.None, null);
             if (ModuleConfiguration.Instance.EnableDeclareWarMissives) // TODO: Move to a different menu and get a different list of valid recipients.  Should be able to declare war regardless of whether the faction leader is a prisoner. Select faction instead, and have recipient be either the ruler or clan leader with highest influence.
                 campaignGameStarter.AddGameMenuOption("cps_town_courier_diplomacy", "cps_town_courier_diplomacy_war", "Send a declaration of war.", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_diplomacy_war_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_diplomacy_war_on_consequence), false, -1, false);
             if (ModuleConfiguration.Instance.EnablePeaceMissives)
