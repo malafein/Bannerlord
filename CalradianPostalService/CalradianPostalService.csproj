@@ -8,8 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.0.0.9" />
-    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="log4net" Version="2.0.16" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3">
       <!-- Game ships Newtonsoft.Json; compile-only reference -->
       <ExcludeAssets>runtime</ExcludeAssets>
@@ -20,7 +19,6 @@
     <Exec Command="mkdir -p '$(ModDeployPath)'" />
     <Exec Command="mkdir -p '$(ModDataPath)'" />
     <Exec Command="cp '$(OutputPath)$(AssemblyName).dll' '$(ModDeployPath)'" />
-    <Exec Command="cp '$(OutputPath)0Harmony.dll' '$(ModDeployPath)'" />
     <Exec Command="cp '$(OutputPath)log4net.dll' '$(ModDeployPath)'" />
     <Exec Command="cp '$(ProjectDir)SubModule.xml' '$(ModRootPath)'" />
     <Exec Command="cp '$(ProjectDir)ModuleData/'* '$(ModDataPath)'" />

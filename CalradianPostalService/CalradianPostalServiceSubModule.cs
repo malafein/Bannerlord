@@ -19,8 +19,7 @@ namespace CalradianPostalService
 {
     public class CalradianPostalServiceSubModule : MBSubModuleBase
     {
-        // TODO: read Version from SubModule.xml in OnSubModuleLoad
-        public static string Version => "e1.0.0";
+        public static string Version { get; private set; } = "unknown";
 
         public static PostalServiceModel PostalServiceModel => (from m in Campaign.Current.Models.GetGameModels() where m is PostalServiceModel select m).FirstOrDefault() as PostalServiceModel;
 
@@ -136,10 +135,14 @@ namespace CalradianPostalService
         {
             base.OnSubModuleLoad();
 
-            // TODO: read in configs and hook methods w/ harmony
             try
             {
                 XmlConfigurator.Configure(LogManager.GetRepository(Assembly.GetExecutingAssembly()), new FileInfo($"{ModuleDataPath}/log4net.config.xml"));
+
+                var doc = new System.Xml.XmlDocument();
+                doc.Load($"{ModulePath}/SubModule.xml");
+                Version = doc.SelectSingleNode("/Module/Version/@value")?.Value ?? "unknown";
+
                 ModuleConfiguration.LoadConfiguration();
             }
             catch(Exception exception1)
@@ -168,6 +171,8 @@ namespace CalradianPostalService
         //    DebugMessage("OnSubModuleUnloaded called.");
         //}
 
+        private const string LogPrefix = "[CalradianPostalService]";
+
         private static void DebugMessage(string msg)
         {
 #if DEBUG
@@ -183,36 +188,37 @@ namespace CalradianPostalService
         internal static void DebugMessage(string msg, ILog log)
         {
 #if DEBUG
-            InformationManager.DisplayMessage(new InformationMessage(msg));
+            InformationManager.DisplayMessage(new InformationMessage($"{LogPrefix} {msg}"));
             log.Debug(msg);
 #endif
         }
 
         internal static void DebugMessage(Exception exception, ILog log)
         {
+            // Always log exceptions to file for post-mortem debugging
+            log.Error($"{exception.Message}\n{exception.InnerException}\n{exception.StackTrace}");
 #if DEBUG
-            string msg = $"{exception.Message}\n{exception.InnerException}\n{exception.StackTrace}";
-            InformationManager.DisplayMessage(new InformationMessage(msg));
-            log.Debug(msg);
+            InformationManager.DisplayMessage(new InformationMessage($"{LogPrefix} {exception.Message}"));
 #endif
         }
 
         internal static void InfoMessage(string msg, ILog log = null)
         {
-            InformationManager.DisplayMessage(new InformationMessage(msg, InfoColor));
+            InformationManager.DisplayMessage(new InformationMessage($"{LogPrefix} {msg}", InfoColor));
             log?.Info(msg);
         }
 
         internal static void ErrorMessage(string msg, ILog log = null)
         {
-            InformationManager.DisplayMessage(new InformationMessage(msg, ErrorColor));
-            log?.Info(msg);
+            InformationManager.DisplayMessage(new InformationMessage($"{LogPrefix} {msg}", ErrorColor));
+            log?.Error(msg);
         }
 
         internal static void ErrorMessage(Exception exception, string msg, ILog log = null)
         {
-            InformationManager.DisplayMessage(new InformationMessage(msg, ErrorColor));
-            log.Error($"{msg}\n{exception.Message}\n{exception.InnerException.Message}");
+            InformationManager.DisplayMessage(new InformationMessage($"{LogPrefix} {msg}", ErrorColor));
+            string innerMsg = exception.InnerException != null ? $"\n{exception.InnerException.Message}" : "";
+            log?.Error($"{msg}\n{exception.Message}{innerMsg}");
         }
     }
 }
