@@ -1,0 +1,40 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+
+# IDE - Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# IDE - Rider
+.idea/
+*.sln.iml
+
+# IDE - VS Code
+.vscode/
+
+# Logs and diagnostics
+*.log
+*.binlog
+
+# Game logs symlink
+GameLogs
+
+# OS
+.DS_Store
+Thumbs.db
