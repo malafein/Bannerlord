@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Core;
 
@@ -36,10 +37,24 @@ namespace CalradianPostalService.Models
                 // TODO: For now, just base decision on relationship with sender.  Later, the recipient should also weigh whether it is in their interest.
                 // TODO: Consider exposing chance of success (move to PostalServiceModel) to be displayed in menu tooltip.
                 // TODO: Influence cost for recipient to propose the war should be taken into consideration when deciding here, and when selecting recipient in courier menu
-                float relationWithSender = (float)Recipient.GetRelation(Sender);
+                int valor       = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Valor);
+                int calculating = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Calculating);
+                int earnest     = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.PersonaEarnest);
+                int curt        = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.PersonaCurt);
+
+                float chanceOfSuccess = MissiveAcceptanceHelper.RelationBase(Sender, Recipient); // 0–0.50
+                chanceOfSuccess += valor       *  0.12f;  // eager fighters join wars
+                chanceOfSuccess -= calculating *  0.08f;  // cautious lords weigh the cost of another war
+                chanceOfSuccess += earnest     *  0.05f;  // sincere lords respond to calls for loyalty
+                chanceOfSuccess -= curt        *  0.05f;  // blunt lords don't engage in requests for favours
+
+                chanceOfSuccess = MissiveAcceptanceHelper.Clamp01(
+                    chanceOfSuccess * ModuleConfiguration.Instance.Missives.JoinWarDecisionFactor);
+
                 float roll = MBRandom.RandomFloat;
-                float chanceOfSuccess = relationWithSender / 100.0f * ModuleConfiguration.Instance.Missives.JoinWarDecisionFactor;
-                CalradianPostalServiceSubModule.DebugMessage($"relationWithSender: {relationWithSender}, chanceOfSuccess:{chanceOfSuccess}, roll: {roll}", log);
+                CalradianPostalServiceSubModule.DebugMessage(
+                    $"[MissiveJoinWar] relation:{Recipient.GetRelation(Sender)} valor:{valor} calc:{calculating} " +
+                    $"chanceOfSuccess:{chanceOfSuccess:F2} roll:{roll:F2}", log);
                 if (roll <= chanceOfSuccess)
                 {
                     if (Hero.MainHero == Sender)

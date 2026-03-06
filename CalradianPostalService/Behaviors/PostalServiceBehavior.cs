@@ -25,6 +25,8 @@ namespace CalradianPostalService.Behaviors
 
         private Hero _recipientSelected;
         private IFaction _joinWarTarget;
+        private Kingdom _warDeclarationTarget;
+        private Kingdom _allianceTarget;
 
         private List<IMissive> _missives = new List<IMissive>();
         private string _missiveSyncData;
@@ -159,9 +161,23 @@ namespace CalradianPostalService.Behaviors
 
         private void game_menu_cps_town_courier_diplomacy_war_on_consequence(MenuCallbackArgs args)
         {
-            SendMissive<MissiveWar>("This is a declaration of war.");
+            try
+            {
+                var targets = PostalServiceModel.GetValidWarDeclarationTargets(Hero.MainHero, _recipientSelected);
+                var elements = (from t in targets
+                                select new InquiryElement(t.StringId, t.Name.ToString(),
+                                    new BannerImageIdentifier(t.Banner, false))).DefaultIfEmpty().ToList();
 
-            GameMenu.SwitchToMenu("cps_town_courier");
+                MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(
+                    "Select Target Kingdom",
+                    $"Against which kingdom should {_recipientSelected.Name} propose war?",
+                    elements, true, 1, 1, "Continue", "Cancel",
+                    OnSelectWarDeclarationTarget, _ => { }));
+            }
+            catch (Exception ex)
+            {
+                CPSModule.DebugMessage(ex, log);
+            }
         }
 
         private void game_menu_cps_town_courier_diplomacy_peace_on_consequence(MenuCallbackArgs args)
@@ -199,29 +215,15 @@ namespace CalradianPostalService.Behaviors
                 args.Tooltip = new TextObject("{=d0kbtGYn}You don't have enough gold.", null);
                 args.IsEnabled = false;
             }
-            else if (Hero.MainHero != Hero.MainHero.MapFaction.Leader)
+            else if (Hero.MainHero.Clan?.Leader != Hero.MainHero)
             {
-                args.Tooltip = new TextObject("Only rulers may send diplmatic missives of this nature.");
+                args.Tooltip = new TextObject("Only clan leaders may send declarations of war.");
                 args.IsEnabled = false;
             }
-            else if (_recipientSelected != _recipientSelected.MapFaction.Leader)
+            else if (PostalServiceModel.GetValidWarDeclarationTargets(Hero.MainHero, _recipientSelected).Count == 0)
             {
-                args.Tooltip = new TextObject("You may only send declarations of war to other rulers.");
+                args.Tooltip = new TextObject($"There are no valid war targets to propose to {_recipientSelected.Name}.");
                 args.IsEnabled = false;
-            }
-            else if (_recipientSelected.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
-            {
-                args.Tooltip = new TextObject($"You're already at war with {_recipientSelected.MapFaction.Name}.");
-                args.IsEnabled = false;
-            }
-            else if (ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence && !ModuleConfiguration.Instance.Missives.AllowDeclareWarWithInsufficientInfluence)
-            {
-                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Hero.MainHero.Clan);
-                if (Hero.MainHero.Clan.Influence < influenceCost)
-                {
-                    args.Tooltip = new TextObject($"You do not have enough influence ({influenceCost}) to declare war.");
-                    args.IsEnabled = false;
-                }
             }
 
             return true;
@@ -237,29 +239,10 @@ namespace CalradianPostalService.Behaviors
                 args.Tooltip = new TextObject("{=d0kbtGYn}You don't have enough gold.", null);
                 args.IsEnabled = false;
             }
-            else if (Hero.MainHero != Hero.MainHero.MapFaction.Leader)
-            {
-                args.Tooltip = new TextObject("Only rulers may send diplmatic missives of this nature.");
-                args.IsEnabled = false;
-            }
-            else if (_recipientSelected != _recipientSelected.MapFaction.Leader)
-            {
-                args.Tooltip = new TextObject("You may only send offers of peace to other faction leaders.");
-                args.IsEnabled = false;
-            }
             else if (!_recipientSelected.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
             {
-                args.Tooltip = new TextObject($"You're already at peace with {_recipientSelected.MapFaction.Name}.");
+                args.Tooltip = new TextObject($"You are already at peace with {_recipientSelected.MapFaction.Name}.");
                 args.IsEnabled = false;
-            }
-            else if (ModuleConfiguration.Instance.Missives.OfferPeaceCostsInfluence && !ModuleConfiguration.Instance.Missives.AllowOfferPeaceWithInsufficientInfluence)
-            {
-                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace(Hero.MainHero.Clan);
-                if (Hero.MainHero.Clan.Influence < influenceCost)
-                {
-                    args.Tooltip = new TextObject($"You do not have enough influence ({influenceCost}) to make a peace offer.");
-                    args.IsEnabled = false;
-                }
             }
 
             return true;
@@ -325,6 +308,51 @@ namespace CalradianPostalService.Behaviors
             }
         }
 
+        private void game_menu_cps_town_courier_diplomacy_alliance_on_consequence(MenuCallbackArgs args)
+        {
+            try
+            {
+                var targets = PostalServiceModel.GetValidAllianceTargets(Hero.MainHero, _recipientSelected);
+                var elements = (from t in targets
+                                select new InquiryElement(t.StringId, t.Name.ToString(),
+                                    new BannerImageIdentifier(t.Banner, false))).DefaultIfEmpty().ToList();
+
+                MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(
+                    "Select Alliance Target",
+                    $"With which kingdom should {_recipientSelected.Name} propose an alliance?",
+                    elements, true, 1, 1, "Continue", "Cancel",
+                    OnSelectAllianceTarget, _ => { }));
+            }
+            catch (Exception ex)
+            {
+                CPSModule.DebugMessage(ex, log);
+            }
+        }
+
+        private bool game_menu_cps_town_courier_diplomacy_alliance_on_condition(MenuCallbackArgs args)
+        {
+            int courierFee = PostalServiceModel.GetCourierFee(Hero.MainHero, _recipientSelected);
+            MBTextManager.SetTextVariable("CPS_AMOUNT", courierFee, false);
+            args.optionLeaveType = GameMenuOption.LeaveType.Mission;
+            if (Hero.MainHero.Gold < courierFee)
+            {
+                args.Tooltip = new TextObject("{=d0kbtGYn}You don't have enough gold.", null);
+                args.IsEnabled = false;
+            }
+            else if (_recipientSelected.Clan?.Kingdom == null)
+            {
+                args.Tooltip = new TextObject($"{_recipientSelected.Name} is not part of a kingdom and cannot seek an alliance.");
+                args.IsEnabled = false;
+            }
+            else if (PostalServiceModel.GetValidAllianceTargets(Hero.MainHero, _recipientSelected).Count == 0)
+            {
+                args.Tooltip = new TextObject($"There are no valid alliance targets for {_recipientSelected.Name}.");
+                args.IsEnabled = false;
+            }
+
+            return true;
+        }
+
         private void OnSelectWarTarget(List<InquiryElement> targets)
         {
             try
@@ -333,6 +361,40 @@ namespace CalradianPostalService.Behaviors
                 _joinWarTarget = (from f in Campaign.Current.Factions where f.StringId == element.Identifier.ToString() select f).First();                
                 SendMissive<MissiveJoinWar>($"Will you join me in war against {_joinWarTarget.Name}?", 
                     new Dictionary<object, object>{ { MissiveJoinWar.Arg.TargetKingdomId, _joinWarTarget.StringId } });
+                GameMenu.SwitchToMenu("cps_town_courier");
+            }
+            catch (Exception ex)
+            {
+                CPSModule.DebugMessage(ex, log);
+            }
+        }
+
+        private void OnSelectWarDeclarationTarget(List<InquiryElement> targets)
+        {
+            try
+            {
+                var element = targets.First();
+                _warDeclarationTarget = Kingdom.All.First(k => k.StringId == element.Identifier.ToString());
+                SendMissive<MissiveWar>(
+                    $"I call upon you to declare war against {_warDeclarationTarget.Name}.",
+                    new Dictionary<object, object> { { MissiveWar.Arg.TargetKingdomId, _warDeclarationTarget.StringId } });
+                GameMenu.SwitchToMenu("cps_town_courier");
+            }
+            catch (Exception ex)
+            {
+                CPSModule.DebugMessage(ex, log);
+            }
+        }
+
+        private void OnSelectAllianceTarget(List<InquiryElement> targets)
+        {
+            try
+            {
+                var element = targets.First();
+                _allianceTarget = Kingdom.All.First(k => k.StringId == element.Identifier.ToString());
+                SendMissive<MissiveAlliance>(
+                    $"I urge you to seek an alliance with {_allianceTarget.Name}.",
+                    new Dictionary<object, object> { { MissiveAlliance.Arg.TargetKingdomId, _allianceTarget.StringId } });
                 GameMenu.SwitchToMenu("cps_town_courier");
             }
             catch (Exception ex)
@@ -382,6 +444,8 @@ namespace CalradianPostalService.Behaviors
                 campaignGameStarter.AddGameMenuOption("cps_town_courier_diplomacy", "cps_town_courier_diplomacy_peace", "Send an offer for peace.", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_diplomacy_peace_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_diplomacy_peace_on_consequence), false, -1, false);
             if (ModuleConfiguration.Instance.EnableRequestWarMissives)
                 campaignGameStarter.AddGameMenuOption("cps_town_courier_diplomacy", "cps_town_courier_diplomacy_join_war", "Request {CPS_MISSIVE_RECIPIENT} to join in your war.", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_diplomacy_join_war_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_diplomacy_join_war_on_consequence), false, -1, false);
+            if (ModuleConfiguration.Instance.EnableAllianceMissives)
+                campaignGameStarter.AddGameMenuOption("cps_town_courier_diplomacy", "cps_town_courier_diplomacy_alliance", "Request {CPS_MISSIVE_RECIPIENT} to seek an alliance.", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_diplomacy_alliance_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_diplomacy_alliance_on_consequence), false, -1, false);
             campaignGameStarter.AddGameMenuOption("cps_town_courier_diplomacy", "cps_town_courier_diplomacy_back", "{=qWAmxyYz}Back to town center", new GameMenuOption.OnConditionDelegate(back_on_condition), (MenuCallbackArgs x) => GameMenu.SwitchToMenu("town"), true, -1, false);
             
             // TODO: add menu to castle keeps (for owner?)

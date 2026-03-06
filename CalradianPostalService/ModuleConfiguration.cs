@@ -37,15 +37,13 @@ namespace CalradianPostalService
 
         public class MissiveOptions
         {
-            // TODO: Friendly / Threatening Missive
             public bool RenownAffectsRelationChange = false;
 
-            // Diplomacy Missives
-            public bool DeclareWarCostsInfluence = true;
-            public bool AllowDeclareWarWithInsufficientInfluence = true;
-            public bool OfferPeaceCostsInfluence = true;
-            public bool AllowOfferPeaceWithInsufficientInfluence = true;
+            // Per-missive scaling factors (1.0 = default weight; increase to make acceptance more likely overall)
+            public float DeclareWarDecisionFactor = 1.0f;
             public float JoinWarDecisionFactor = 1.0f;
+            public float OfferPeaceDecisionFactor = 1.0f;
+            public float AllianceDecisionFactor = 1.0f;
         }
 
         public int ConfigVersion = 1;
@@ -55,6 +53,7 @@ namespace CalradianPostalService
         public bool EnableDeclareWarMissives = true;
         public bool EnablePeaceMissives = true;
         public bool EnableRequestWarMissives = true;
+        public bool EnableAllianceMissives = true;
 
         private ModuleConfiguration(){}
 

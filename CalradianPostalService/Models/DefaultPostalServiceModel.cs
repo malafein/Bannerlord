@@ -42,6 +42,36 @@ namespace CalradianPostalService.Models
             return new MBReadOnlyList<Hero>(validRecipients);
         }
 
+        public override MBReadOnlyList<Kingdom> GetValidWarDeclarationTargets(Hero sender, Hero recipient)
+        {
+            bool recipientIsRuler = recipient.Clan?.Kingdom != null
+                                 && recipient == recipient.Clan.Kingdom.Leader;
+
+            var validTargets = (from k in Kingdom.All
+                                where !k.IsBanditFaction
+                                   && !recipient.MapFaction.IsAtWarWith(k)
+                                   // Recipient's own kingdom is valid only if they are not the ruler
+                                   && (k != recipient.Clan?.Kingdom || !recipientIsRuler)
+                                orderby k.Name.ToString()
+                                select k).ToList();
+            return new MBReadOnlyList<Kingdom>(validTargets);
+        }
+
+        public override MBReadOnlyList<Kingdom> GetValidAllianceTargets(Hero sender, Hero recipient)
+        {
+            if (recipient.Clan?.Kingdom == null)
+                return new MBReadOnlyList<Kingdom>(new List<Kingdom>());
+
+            var validTargets = (from k in Kingdom.All
+                                where !k.IsBanditFaction
+                                   && k != recipient.Clan.Kingdom
+                                   && !recipient.MapFaction.IsAtWarWith(k)
+                                   && !recipient.Clan.Kingdom.AlliedKingdoms.Contains(k)
+                                orderby k.Name.ToString()
+                                select k).ToList();
+            return new MBReadOnlyList<Kingdom>(validTargets);
+        }
+
         public override MBReadOnlyList<IFaction> GetValidJoinWarTargets(Hero sender, Hero recipient)
         {
             var validTargets = (from f in Campaign.Current.Factions
