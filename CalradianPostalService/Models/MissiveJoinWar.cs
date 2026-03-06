@@ -1,4 +1,3 @@
-﻿using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,6 @@ namespace CalradianPostalService.Models
 {
     public class MissiveJoinWar : MissiveBase, IMissive
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(MissiveJoinWar));
 
         public static readonly string TargetKingdomIdArg = "TargetKingdomId";
         public enum Arg : int
@@ -52,14 +50,14 @@ namespace CalradianPostalService.Models
                     chanceOfSuccess * ModuleConfiguration.Instance.Missives.JoinWarDecisionFactor);
 
                 float roll = MBRandom.RandomFloat;
-                CalradianPostalServiceSubModule.DebugMessage(
+                CpsLogger.Debug(
                     $"[MissiveJoinWar] relation:{Recipient.GetRelation(Sender)} valor:{valor} calc:{calculating} " +
-                    $"chanceOfSuccess:{chanceOfSuccess:F2} roll:{roll:F2}", log);
+                    $"chanceOfSuccess:{chanceOfSuccess:F2} roll:{roll:F2}");
                 if (roll <= chanceOfSuccess)
                 {
                     if (Hero.MainHero == Sender)
                     {
-                        CalradianPostalServiceSubModule.InfoMessage($"{Recipient} agreed to your request. They will propose that {Recipient.MapFaction.Name} join your war."); // TODO: Inform player in OnReturn
+                        CpsLogger.Info($"{Recipient} agreed to your request. They will propose that {Recipient.MapFaction.Name} join your war."); // TODO: Inform player in OnReturn
                     }
 
                     // They appreciate being asked to join your war, so gain some relation and Charm xp
@@ -79,12 +77,12 @@ namespace CalradianPostalService.Models
                 }
                 else if (Hero.MainHero == Sender)
                 {
-                    CalradianPostalServiceSubModule.InfoMessage($"{Recipient} declined your request to join the war."); // TODO: Inform player in OnReturn
+                    CpsLogger.Info($"{Recipient} declined your request to join the war."); // TODO: Inform player in OnReturn
                 }
             }
             else
             {
-                CalradianPostalServiceSubModule.ErrorMessage("Target Kingdom arg not provided.", log);
+                CpsLogger.Error("Target Kingdom arg not provided.");
             }
         }
     }

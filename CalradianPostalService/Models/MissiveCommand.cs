@@ -1,4 +1,3 @@
-﻿using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +7,11 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.SaveSystem;
 
-using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
     public class MissiveCommand : MissiveBase, IMissive
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(MissiveCommand));
 
         public MissiveCommand() { }
         public MissiveCommand(MissiveSyncData data) : base(data) { }

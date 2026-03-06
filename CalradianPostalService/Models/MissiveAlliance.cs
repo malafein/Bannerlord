@@ -1,4 +1,3 @@
-using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +10,6 @@ namespace CalradianPostalService.Models
 {
     public class MissiveAlliance : MissiveBase, IMissive
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(MissiveAlliance));
 
         public static readonly string TargetKingdomIdArg = "TargetKingdomId";
         public enum Arg : int { TargetKingdomId }
@@ -30,14 +28,14 @@ namespace CalradianPostalService.Models
 
             if (Args == null || !Args.ContainsKey(Arg.TargetKingdomId))
             {
-                CalradianPostalServiceSubModule.ErrorMessage("Target Kingdom arg not provided.", log);
+                CpsLogger.Error("Target Kingdom arg not provided.");
                 return;
             }
 
             Kingdom targetKingdom = Kingdom.All.FirstOrDefault(k => k.StringId == Args[Arg.TargetKingdomId].ToString());
             if (targetKingdom == null)
             {
-                CalradianPostalServiceSubModule.ErrorMessage("Target Kingdom not found.", log);
+                CpsLogger.Error("Target Kingdom not found.");
                 return;
             }
 
@@ -72,20 +70,20 @@ namespace CalradianPostalService.Models
             float roll     = MBRandom.RandomFloat;
             bool  accepted = roll <= chance;
 
-            CalradianPostalServiceSubModule.DebugMessage(
+            CpsLogger.Debug(
                 $"[MissiveAlliance] relation:{Recipient.GetRelation(Sender)} honor:{honor} calc:{calculating} " +
-                $"allianceValue:{allianceValue:F2} chance:{chance:F2} roll:{roll:F2} accepted:{accepted}", log);
+                $"allianceValue:{allianceValue:F2} chance:{chance:F2} roll:{roll:F2} accepted:{accepted}");
 
             if (!accepted)
             {
                 if (Hero.MainHero == Sender)
-                    CalradianPostalServiceSubModule.InfoMessage(
+                    CpsLogger.Info(
                         $"{Recipient} has declined your request to seek an alliance with {targetKingdom.Name}.");
                 return;
             }
 
             if (Hero.MainHero == Sender)
-                CalradianPostalServiceSubModule.InfoMessage(
+                CpsLogger.Info(
                     $"{Recipient} has agreed to propose an alliance with {targetKingdom.Name} to their council.");
 
             var decision = new StartAllianceDecision(Recipient.Clan, targetKingdom);

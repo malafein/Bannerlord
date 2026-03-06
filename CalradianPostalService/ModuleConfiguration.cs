@@ -1,24 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using log4net;
 using Newtonsoft.Json;
-using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService
 {
     public class ModuleConfiguration
     {
-        private static string ConfigsPath = System.IO.Path.Combine(
+        private static readonly string ConfigsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "Mount and Blade II Bannerlord", "Configs", CPSModule.ModuleName);   // Documents folder
-        private static string ConfigFilePath = System.IO.Path.Combine(ConfigsPath, $"{CPSModule.ModuleName}.config.json");
-        private static string DefaultConfigFilePath = System.IO.Path.Combine(CPSModule.ModuleDataPath, $"{CPSModule.ModuleName}.config.json");
-
-        private static readonly ILog log = LogManager.GetLogger(typeof(ModuleConfiguration));
+            "Mount and Blade II Bannerlord", "Configs", CalradianPostalServiceSubModule.ModuleName);
+        private static readonly string ConfigFilePath = Path.Combine(ConfigsPath, $"{CalradianPostalServiceSubModule.ModuleName}.config.json");
+        private static readonly string DefaultConfigFilePath = Path.Combine(CalradianPostalServiceSubModule.ModuleDataPath, $"{CalradianPostalServiceSubModule.ModuleName}.config.json");
 
         public class PostalServiceModelOptions
         {
@@ -55,10 +47,9 @@ namespace CalradianPostalService
         public bool EnableRequestWarMissives = true;
         public bool EnableAllianceMissives = true;
 
-        private ModuleConfiguration(){}
+        private ModuleConfiguration() { }
 
         public PostalServiceModelOptions PostalService = new PostalServiceModelOptions();
-
         public MissiveOptions Missives = new MissiveOptions();
 
         public static ModuleConfiguration Instance { get; private set; } = new ModuleConfiguration();
@@ -68,30 +59,27 @@ namespace CalradianPostalService
             try
             {
                 if (!Directory.Exists(ConfigsPath))
-                {
                     Directory.CreateDirectory(ConfigsPath);
-                }
 
                 if (!File.Exists(ConfigFilePath))
                 {
                     if (!File.Exists(DefaultConfigFilePath))
                     {
-                        CPSModule.ErrorMessage("No configuration file found, using default configuration.", log);
+                        CpsLogger.Info("No configuration file found, using defaults.");
                         SaveConfiguration();
                         return true;
                     }
-
                     File.Copy(DefaultConfigFilePath, ConfigFilePath);
                 }
 
                 string config = File.ReadAllText(ConfigFilePath);
                 Instance = JsonConvert.DeserializeObject<ModuleConfiguration>(config);
 
-                // TODO: Notify player when default configuration has changed, so they can decide whether they want to make adjustments
+                // TODO: Notify player when default configuration has changed
             }
             catch (Exception ex)
             {
-                CPSModule.ErrorMessage(ex, "Unable to load configuration.", log);
+                CpsLogger.Error(ex, "Unable to load configuration");
                 return false;
             }
 
@@ -103,16 +91,14 @@ namespace CalradianPostalService
             try
             {
                 if (!Directory.Exists(ConfigsPath))
-                {
                     Directory.CreateDirectory(ConfigsPath);
-                }
 
                 string config = JsonConvert.SerializeObject(Instance, Formatting.Indented);
                 File.WriteAllText(ConfigFilePath, config);
             }
             catch (Exception ex)
             {
-                CPSModule.ErrorMessage(ex, "Unable to save configuration.", log);
+                CpsLogger.Error(ex, "Unable to save configuration");
                 return false;
             }
 

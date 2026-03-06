@@ -1,4 +1,3 @@
-using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,6 @@ namespace CalradianPostalService.Models
 {
     public class MissivePeace : MissiveBase, IMissive
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(MissivePeace));
 
         public MissivePeace() { }
         public MissivePeace(MissiveSyncData data) : base(data) { }
@@ -48,14 +46,14 @@ namespace CalradianPostalService.Models
             float roll     = MBRandom.RandomFloat;
             bool  accepted = roll <= chance;
 
-            CalradianPostalServiceSubModule.DebugMessage(
+            CpsLogger.Debug(
                 $"[MissivePeace] relation:{Recipient.GetRelation(Sender)} mercy:{mercy} calc:{calculating} " +
-                $"pressure:{pressureScore:F2} chance:{chance:F2} roll:{roll:F2} accepted:{accepted}", log);
+                $"pressure:{pressureScore:F2} chance:{chance:F2} roll:{roll:F2} accepted:{accepted}");
 
             if (!accepted)
             {
                 if (Hero.MainHero == Sender)
-                    CalradianPostalServiceSubModule.InfoMessage(
+                    CpsLogger.Info(
                         $"{Recipient} has rejected your offer of peace.");
                 return;
             }
@@ -63,7 +61,7 @@ namespace CalradianPostalService.Models
             if (Recipient.Clan?.Kingdom != null)
             {
                 if (Hero.MainHero == Sender)
-                    CalradianPostalServiceSubModule.InfoMessage(
+                    CpsLogger.Info(
                         $"{Recipient} has accepted your offer and will bring it before their council.");
 
                 // Recipient personally agrees — now brings it to their kingdom council to vote
@@ -74,7 +72,7 @@ namespace CalradianPostalService.Models
             {
                 // Independent clan — no council, peace accepted directly
                 if (Hero.MainHero == Sender)
-                    CalradianPostalServiceSubModule.InfoMessage(
+                    CpsLogger.Info(
                         $"{Recipient} has accepted your offer of peace.");
 
                 MakePeaceAction.Apply(Sender.MapFaction, Recipient.MapFaction);

@@ -3,14 +3,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="TaleWorlds.CampaignSystem">
-      <HintPath>/home/malafein/.steam/steam/steamapps/common/Mount &amp; Blade II Bannerlord/bin/Win64_Shipping_Client/TaleWorlds.CampaignSystem.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="TaleWorlds.Core">
-      <HintPath>/home/malafein/.steam/steam/steamapps/common/Mount &amp; Blade II Bannerlord/bin/Win64_Shipping_Client/TaleWorlds.Core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
+  <!-- Game DLL references are in Directory.Build.props (gitignored).
+       Copy Directory.Build.props.example to Directory.Build.props and set BannerlordPath. -->
 </Project>

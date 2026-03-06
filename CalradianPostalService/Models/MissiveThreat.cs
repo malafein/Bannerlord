@@ -1,4 +1,3 @@
-using log4net;
 using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
@@ -7,13 +6,11 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.Core;
 using TaleWorlds.SaveSystem;
 
-using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
     public class MissiveThreat : MissiveBase, IMissive
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(MissiveThreat));
 
         public MissiveThreat() { }
         public MissiveThreat(MissiveSyncData data) : base(data) { }
@@ -36,10 +33,9 @@ namespace CalradianPostalService.Models
             {
                 // Grudging respect — the threat is met with steel, not fear
                 if (Hero.MainHero == Sender)
-                    CPSModule.InfoMessage($"{Recipient} was not impressed by your threat and has chosen to defy you.");
+                    CpsLogger.Info($"{Recipient} was not impressed by your threat and has chosen to defy you.");
 
-                CPSModule.DebugMessage(
-                    $"[MissiveThreat] DEFIANCE valor:{valor} defianceChance:{defianceChance:F2} roll:{roll:F2}", log);
+                CpsLogger.Debug($"[MissiveThreat] DEFIANCE valor:{valor} defianceChance:{defianceChance:F2} roll:{roll:F2}");
                 // No relation change — the threat bounced off
                 return;
             }
@@ -49,10 +45,9 @@ namespace CalradianPostalService.Models
             if (roll <= amusementChance + defianceChance)
             {
                 if (Hero.MainHero == Sender)
-                    CPSModule.InfoMessage($"{Recipient} seems to have found your threat more amusing than frightening.");
+                    CpsLogger.Info($"{Recipient} seems to have found your threat more amusing than frightening.");
 
-                CPSModule.DebugMessage(
-                    $"[MissiveThreat] AMUSEMENT ironic:{ironic} amusementChance:{amusementChance:F2} roll:{roll:F2}", log);
+                CpsLogger.Debug($"[MissiveThreat] AMUSEMENT ironic:{ironic} amusementChance:{amusementChance:F2} roll:{roll:F2}");
                 return;
             }
 
@@ -64,14 +59,13 @@ namespace CalradianPostalService.Models
 
             angerChance = MissiveAcceptanceHelper.Clamp01(angerChance * honorMultiplier);
 
-            CPSModule.DebugMessage(
-                $"[MissiveThreat] relation:{relation} honor:{honor} honorMult:{honorMultiplier:F2} " +
-                $"angerChance:{angerChance:F2} roll:{roll:F2}", log);
+            CpsLogger.Debug($"[MissiveThreat] relation:{relation} honor:{honor} honorMult:{honorMultiplier:F2} " +
+                $"angerChance:{angerChance:F2} roll:{roll:F2}");
 
             if (roll <= angerChance)
             {
                 if (Hero.MainHero == Sender)
-                    CPSModule.InfoMessage($"{Recipient} was angered by your letter.");
+                    CpsLogger.Info($"{Recipient} was angered by your letter.");
 
                 // Honor doubles the relation penalty when deeply offended
                 int relationPenalty = honor >= 1 ? -2 : -1;
@@ -80,7 +74,7 @@ namespace CalradianPostalService.Models
             }
             else if (Hero.MainHero == Sender)
             {
-                CPSModule.InfoMessage($"{Recipient} received your letter, but was not impressed.");
+                CpsLogger.Info($"{Recipient} received your letter, but was not impressed.");
             }
         }
     }

@@ -1,20 +1,13 @@
-﻿using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
-
-using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
     class DefaultPostalServiceModel : PostalServiceModel
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(DefaultPostalServiceModel));
-
         private readonly ModuleConfiguration.PostalServiceModelOptions config = ModuleConfiguration.Instance.PostalService;
 
         public override MBReadOnlyList<Hero> GetValidMissiveRecipients(Hero sender)
@@ -50,7 +43,6 @@ namespace CalradianPostalService.Models
             var validTargets = (from k in Kingdom.All
                                 where !k.IsBanditFaction
                                    && !recipient.MapFaction.IsAtWarWith(k)
-                                   // Recipient's own kingdom is valid only if they are not the ruler
                                    && (k != recipient.Clan?.Kingdom || !recipientIsRuler)
                                 orderby k.Name.ToString()
                                 select k).ToList();
@@ -83,24 +75,20 @@ namespace CalradianPostalService.Models
 
         public override int GetCourierFee(Hero sender, Hero recipient)
         {
-            // calculate fee based on renown.
             float multiplier = 1.0f;
             if (config.RenownAffectsCourierFee)
             {
                 float renownRate = Math.Max(recipient.Clan.Renown, config.MinimumRenownAffectingFee) / Math.Max(sender.Clan.Renown, config.MinimumRenownAffectingFee);
                 multiplier = renownRate * multiplier;
-                CPSModule.DebugMessage($"renown rate: {renownRate}", log);
+                CpsLogger.Debug($"Courier fee renown rate: {renownRate}");
             }
 
-            // calculate fee based on distance.
             if (config.DistanceAffectsCourierFee)
             {
                 float distance = sender.GetCampaignPosition().Distance(recipient.GetCampaignPosition());
                 multiplier = multiplier * distance;
-                CPSModule.DebugMessage($"distance: {distance}", log);
+                CpsLogger.Debug($"Courier fee distance: {distance}");
             }
-
-            CPSModule.DebugMessage($"total fee multiplier: {multiplier}", log);
 
             int fee = (int)Math.Ceiling(config.CourierRate * multiplier);
             if (config.MaximumCourierFee >= 0)
@@ -117,15 +105,13 @@ namespace CalradianPostalService.Models
                 days = sender.GetCampaignPosition().Distance(recipient.GetCampaignPosition()) / config.MissiveDistancePerDay;
             }
 
-            CPSModule.DebugMessage($"Delivery will take {days} days.", log);
+            CpsLogger.Debug($"Missive delivery will take {days} days.");
 
             return CampaignTime.DaysFromNow(config.MissiveDeliveryRate * days);
         }
 
         public override bool IsValidRecipientOfCommand(Hero sender, Hero recipient)
         {
-            // Sender is leader of the same clan or faction as recipient
-            // Recipient is not a prisoner
             return (sender.MapFaction == recipient.MapFaction && sender.MapFaction.Leader == sender
                 || sender.Clan == recipient.Clan && sender.Clan.Leader == sender)
                 && !recipient.IsPrisoner;

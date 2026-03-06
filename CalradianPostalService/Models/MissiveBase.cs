@@ -7,7 +7,6 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.Core;
 
-using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
@@ -42,7 +41,7 @@ namespace CalradianPostalService.Models
 
         public virtual void OnSend()
         {
-            int gold = CPSModule.PostalServiceModel.GetCourierFee(this.Sender, this.Recipient);
+            int gold = CalradianPostalServiceSubModule.PostalServiceModel.GetCourierFee(this.Sender, this.Recipient);
             GiveGoldAction.ApplyBetweenCharacters(this.Sender, null, gold, false);
         }
     }

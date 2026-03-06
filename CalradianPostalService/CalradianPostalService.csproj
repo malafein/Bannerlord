@@ -4,11 +4,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.16" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3">
       <!-- Game ships Newtonsoft.Json; compile-only reference -->
       <ExcludeAssets>runtime</ExcludeAssets>
@@ -19,7 +17,6 @@
     <Exec Command="mkdir -p '$(ModDeployPath)'" />
     <Exec Command="mkdir -p '$(ModDataPath)'" />
     <Exec Command="cp '$(OutputPath)$(AssemblyName).dll' '$(ModDeployPath)'" />
-    <Exec Command="cp '$(OutputPath)log4net.dll' '$(ModDeployPath)'" />
     <Exec Command="cp '$(ProjectDir)SubModule.xml' '$(ModRootPath)'" />
     <Exec Command="cp '$(ProjectDir)ModuleData/'* '$(ModDataPath)'" />
     <Message Importance="high" Text="Deployed $(AssemblyName) to Game Folder" />

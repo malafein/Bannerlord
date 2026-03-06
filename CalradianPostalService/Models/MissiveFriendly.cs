@@ -1,4 +1,3 @@
-using log4net;
 using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
@@ -7,13 +6,11 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.Core;
 using TaleWorlds.SaveSystem;
 
-using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
     public class MissiveFriendly : MissiveBase, IMissive
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(MissiveFriendly));
 
         public MissiveFriendly() { }
         public MissiveFriendly(MissiveSyncData data) : base(data) { }
@@ -38,20 +35,19 @@ namespace CalradianPostalService.Models
             chance = MissiveAcceptanceHelper.Clamp01(chance);
 
             float roll = MBRandom.RandomFloat;
-            CPSModule.DebugMessage(
-                $"[MissiveFriendly] relation:{relation} generosity:{generosity} earnest:{earnest} curt:{curt} " +
-                $"chance:{chance:F2} roll:{roll:F2}", log);
+            CpsLogger.Debug($"[MissiveFriendly] relation:{relation} generosity:{generosity} earnest:{earnest} curt:{curt} " +
+                $"chance:{chance:F2} roll:{roll:F2}");
 
             if (roll <= chance)
             {
                 if (Hero.MainHero == Sender)
-                    CPSModule.InfoMessage($"{Recipient} appreciated your letter.");
+                    CpsLogger.Info($"{Recipient} appreciated your letter.");
 
                 ChangeRelationAction.ApplyRelationChangeBetweenHeroes(Sender, Recipient, 1);
             }
             else if (Hero.MainHero == Sender)
             {
-                CPSModule.InfoMessage($"{Recipient} received your letter.");
+                CpsLogger.Info($"{Recipient} received your letter.");
             }
         }
     }
