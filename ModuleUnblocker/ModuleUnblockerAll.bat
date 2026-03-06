@@ -1,0 +1,1 @@
+powershell "dir .. | dir -Recurse | Unblock-File"
