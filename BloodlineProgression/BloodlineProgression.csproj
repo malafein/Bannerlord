@@ -4,8 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <ModRootPath>/home/malafein/.steam/steam/steamapps/common/Mount &amp; Blade II Bannerlord/Modules/BloodlineProgression/</ModRootPath>
-    <ModDeployPath>$(ModRootPath)bin/Win64_Shipping_Client/</ModDeployPath>
   </PropertyGroup>
 
   <ItemGroup>

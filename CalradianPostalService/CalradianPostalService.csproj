@@ -5,9 +5,6 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <ModRootPath>/home/malafein/.steam/steam/steamapps/common/Mount &amp; Blade II Bannerlord/Modules/CalradianPostalService/</ModRootPath>
-    <ModDeployPath>$(ModRootPath)bin/Win64_Shipping_Client/</ModDeployPath>
-    <ModDataPath>$(ModRootPath)ModuleData/</ModDataPath>
   </PropertyGroup>
 
   <ItemGroup>
