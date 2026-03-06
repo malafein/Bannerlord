@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Election;
 
 namespace CalradianPostalService.Models
 {
@@ -25,13 +26,17 @@ namespace CalradianPostalService.Models
         {
             base.OnSend();
 
-            // TODO: should a missive be dispatched, or should the war start now?
-            DeclareWarAction.ApplyByDefault(Sender.MapFaction, Recipient.MapFaction);
-
-            if (ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence)
+            if (Sender.Clan?.Kingdom != null)
             {
-                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingWar(Sender.Clan);
-                Sender.Clan.Influence -= influenceCost;
+                // Propose war to the sender's kingdom council; the letter is the formal declaration to the recipient
+                bool ignoreInfluenceCost = !ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence;
+                var decision = new DeclareWarDecision(Sender.Clan, Recipient.MapFaction);
+                Sender.Clan.Kingdom.AddDecision(decision, ignoreInfluenceCost);
+            }
+            else
+            {
+                // Sender is an independent clan — no council, war starts immediately
+                DeclareWarAction.ApplyByDefault(Sender.MapFaction, Recipient.MapFaction);
             }
         }
     }

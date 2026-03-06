@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Core;
 
 namespace CalradianPostalService.Models
@@ -49,10 +50,17 @@ namespace CalradianPostalService.Models
                     // They appreciate being asked to join your war, so gain some relation and Charm xp
                     ChangeRelationAction.ApplyRelationChangeBetweenHeroes(Sender, Recipient, 1);
 
-                    // TODO: Original design was to have Recipient propose war to their kingdom council via DeclareWarKingdomDecision.
-                    // DeclareWarKingdomDecision and Campaign.AddDecision were removed in v1.3.x.
-                    // For now, directly declare war as the simplified fallback.
-                    DeclareWarAction.ApplyByDefault(Recipient.MapFaction, kingdom);
+                    if (Recipient.Clan?.Kingdom != null)
+                    {
+                        // Recipient proposes the war to their own kingdom council
+                        var decision = new DeclareWarDecision(Recipient.Clan, kingdom);
+                        Recipient.Clan.Kingdom.AddDecision(decision, false);
+                    }
+                    else
+                    {
+                        // Recipient is an independent clan — no council, war starts immediately
+                        DeclareWarAction.ApplyByDefault(Recipient.MapFaction, kingdom);
+                    }
                 }
                 else if (Hero.MainHero == Sender)
                 {

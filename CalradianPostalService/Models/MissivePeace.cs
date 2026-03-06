@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Election;
 
 namespace CalradianPostalService.Models
 {
@@ -20,19 +21,17 @@ namespace CalradianPostalService.Models
         {
             base.OnDelivery();
 
-            // TODO: This shouldn't automatically succeed
-            // One option would be to add the cost of bartering for peace to the courier fee, and have it delivered to the recipient
-            MakePeaceAction.Apply(Sender.MapFaction, Recipient.MapFaction);
-        }
-
-        public override void OnSend()
-        {
-            base.OnSend();
-
-            if (ModuleConfiguration.Instance.Missives.DeclareWarCostsInfluence)
+            if (Recipient.Clan?.Kingdom != null)
             {
-                int influenceCost = Campaign.Current.Models.DiplomacyModel.GetInfluenceCostOfProposingPeace(Sender.Clan);
-                Sender.Clan.Influence -= influenceCost;
+                // The peace offer arrives: recipient's kingdom council votes on whether to accept
+                bool ignoreInfluenceCost = !ModuleConfiguration.Instance.Missives.OfferPeaceCostsInfluence;
+                var decision = new MakePeaceKingdomDecision(Recipient.Clan, Sender.MapFaction, 0, 0, false, true);
+                Recipient.Clan.Kingdom.AddDecision(decision, ignoreInfluenceCost);
+            }
+            else
+            {
+                // Recipient is an independent clan — no council, peace is accepted immediately
+                MakePeaceAction.Apply(Sender.MapFaction, Recipient.MapFaction);
             }
         }
     }
