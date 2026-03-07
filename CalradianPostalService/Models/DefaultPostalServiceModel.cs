@@ -17,7 +17,7 @@ namespace CalradianPostalService.Models
                 var validRecipients = (from h in Hero.AllAliveHeroes
                                        where h.HasMet && !h.IsPrisoner
                                        orderby h.Name.ToString()
-                                       select h).DefaultIfEmpty().ToList();
+                                       select h).ToList();
                 return new MBReadOnlyList<Hero>(validRecipients);
             }
 
@@ -29,9 +29,10 @@ namespace CalradianPostalService.Models
         {
             // TODO: expand this list when more types of diplomacy missives are implemented or create new submenus
             var validRecipients = (from h in Hero.AllAliveHeroes
-                                   where h.HasMet && !h.IsPrisoner && sender.MapFaction != h.MapFaction && h.Clan.Leader == h
+                                   where h.HasMet && !h.IsPrisoner && sender.MapFaction != h.MapFaction
+                                      && h.Clan != null && h.Clan.Leader == h
                                    orderby h.Name.ToString()
-                                   select h).DefaultIfEmpty().ToList();
+                                   select h).ToList();
             return new MBReadOnlyList<Hero>(validRecipients);
         }
 

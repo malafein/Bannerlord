@@ -59,11 +59,23 @@ namespace CalradianPostalService.Behaviors
 
         public void game_menu_cps_town_courier_diplomacy_on_consequence(MenuCallbackArgs args)
         {
-            var contacts = PostalServiceModel.GetValidDiplomacyRecipients(Hero.MainHero);
-            var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).DefaultIfEmpty().ToList();
+            try
+            {
+                var contacts = PostalServiceModel.GetValidDiplomacyRecipients(Hero.MainHero);
+                if (!contacts.Any())
+                {
+                    CpsLogger.Info("No eligible diplomatic recipients found.");
+                    return;
+                }
+                var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).ToList();
 
-            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, 1, 1,
-                "Continue", "Cancel", OnSelectDiplomacyRecipient, _ => { }));
+                MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, 1, 1,
+                    "Continue", "Cancel", OnSelectDiplomacyRecipient, _ => { }));
+            }
+            catch (Exception ex)
+            {
+                CpsLogger.Error(ex, "Failed to open diplomatic missive dialog");
+            }
         }
 
         public bool game_menu_cps_town_courier_diplomacy_on_condition(MenuCallbackArgs args)
@@ -74,11 +86,23 @@ namespace CalradianPostalService.Behaviors
 
         public void game_menu_cps_town_courier_missive_on_consequence(MenuCallbackArgs args)
         {
-            var contacts = PostalServiceModel.GetValidMissiveRecipients(Hero.MainHero);
-            var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).DefaultIfEmpty().ToList();
+            try
+            {
+                var contacts = PostalServiceModel.GetValidMissiveRecipients(Hero.MainHero);
+                if (!contacts.Any())
+                {
+                    CpsLogger.Info("No eligible missive recipients found.");
+                    return;
+                }
+                var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).ToList();
 
-            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, 1, 1,
-                "Continue", "Cancel", OnSelectRecipient, _ => { }));
+                MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, 1, 1,
+                    "Continue", "Cancel", OnSelectRecipient, _ => { }));
+            }
+            catch (Exception ex)
+            {
+                CpsLogger.Error(ex, "Failed to open missive dialog");
+            }
         }
 
         public bool game_menu_cps_town_courier_missive_on_condition(MenuCallbackArgs args)
