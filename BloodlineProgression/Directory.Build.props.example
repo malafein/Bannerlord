@@ -19,5 +19,6 @@
     <Reference Include="$(GameBinPath)/TaleWorlds.MountAndBlade.dll" Private="false" />
     <Reference Include="$(GameBinPath)/TaleWorlds.ObjectSystem.dll" Private="false" />
     <Reference Include="$(GameBinPath)/TaleWorlds.Localization.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.Engine.dll" Private="false" />
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@ using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.Core;
+using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 
@@ -9,9 +10,28 @@ namespace BloodlineProgression
 {
     public class SubModule : MBSubModuleBase
     {
+        private static string _version = "unknown";
+        private static readonly Color InfoColor = new Color(0.25f, 0.8f, 0.8f);
+
         protected override void OnSubModuleLoad()
         {
             base.OnSubModuleLoad();
+            try
+            {
+                var doc = new System.Xml.XmlDocument();
+                doc.Load($"{BasePath.Name}/Modules/BloodlineProgression/SubModule.xml");
+                _version = doc.SelectSingleNode("/Module/Version/@value")?.Value ?? "unknown";
+            }
+            catch (Exception ex)
+            {
+                BloodlineLogger.Log($"Failed to read version: {ex.Message}");
+            }
+        }
+
+        protected override void OnBeforeInitialModuleScreenSetAsRoot()
+        {
+            base.OnBeforeInitialModuleScreenSetAsRoot();
+            InformationManager.DisplayMessage(new InformationMessage($"[Bloodline Progression] {_version} loaded.", InfoColor));
         }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
@@ -25,11 +45,6 @@ namespace BloodlineProgression
 
                 var config = Config.Instance;
                 BloodlineLogger.Log($"Mod loaded. Config: AttributePointMultiplier={config.AttributePointMultiplier}, SkillPointMultiplier={config.SkillPointMultiplier}, EnableLearningBonus={config.EnableLearningBonus}, LearningRateThreshold={config.LearningRateThreshold}");
-
-                InformationManager.DisplayMessage(new InformationMessage("[Bloodline Progression] Mod loaded and active!", Colors.Red));
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Bloodline] Attr x{config.AttributePointMultiplier:F1} | Focus x{config.SkillPointMultiplier:F1} | LearningBonus={(config.EnableLearningBonus ? $"on (min {config.LearningRateThreshold:F2})" : "off")}",
-                    Colors.Green));
             }
         }
     }
