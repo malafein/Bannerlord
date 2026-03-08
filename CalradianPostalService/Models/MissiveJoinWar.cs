@@ -83,7 +83,7 @@ namespace CalradianPostalService.Models
                 chanceOfSuccess * ModuleConfiguration.Instance.Missives.JoinWarDecisionFactor);
 
             float roll = MBRandom.RandomFloat;
-            CpsLogger.Debug(
+            CpsLogger.Verbose(
                 $"[MissiveJoinWar] relation:{Recipient.GetRelation(Sender)} valor:{valor} calc:{calculating} " +
                 $"targetRel:{targetRelation:F0} targetHostility:{targetHostility:F2} strength:{strengthMod:F2} " +
                 $"warBurden:{warBurdenMod:F2} prestige:{senderPrestige:F2} senderRel:{senderRelMod:F2} charm:{charmBonus:F3} " +
@@ -92,7 +92,7 @@ namespace CalradianPostalService.Models
             if (Sender == Hero.MainHero)
             {
                 Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 20f);
-                CpsLogger.Debug($"[CharmXP] +20 Charm XP granted to {Sender.Name}.");
+                CpsLogger.Verbose($"[CharmXP] +20 Charm XP granted to {Sender.Name}.");
             }
 
             if (roll <= chanceOfSuccess)

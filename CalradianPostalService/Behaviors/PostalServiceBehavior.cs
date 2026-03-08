@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.Core;
@@ -72,7 +73,7 @@ namespace CalradianPostalService.Behaviors
                     CpsLogger.Info("No eligible diplomatic recipients found.");
                     return;
                 }
-                var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).ToList();
+                var elements = (from c in contacts select new InquiryElement(c.StringId, FormatRecipientLabel(c), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).ToList();
 
                 MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, 1, 1,
                     "Continue", "Cancel", OnSelectDiplomacyRecipient, _ => { }));
@@ -99,7 +100,7 @@ namespace CalradianPostalService.Behaviors
                     CpsLogger.Info("No eligible missive recipients found.");
                     return;
                 }
-                var elements = (from c in contacts select new InquiryElement(c.StringId, c.Name.ToString(), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).ToList();
+                var elements = (from c in contacts select new InquiryElement(c.StringId, FormatRecipientLabel(c), new CharacterImageIdentifier(CharacterCode.CreateFrom(c.CharacterObject)))).ToList();
 
                 MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Select Recipient", "To whom should we deliver this missive?", elements, true, 1, 1,
                     "Continue", "Cancel", OnSelectRecipient, _ => { }));
@@ -194,7 +195,7 @@ namespace CalradianPostalService.Behaviors
             if (recipient == null) return;
             int cooldownDays = ModuleConfiguration.Instance.PostalService.PersonalMissiveCooldownDays;
             _personalMissiveCooldowns[recipient.StringId] = CampaignTime.DaysFromNow(cooldownDays);
-            CpsLogger.Debug($"[Cooldown] {recipient.Name} cooldown set, expires in {cooldownDays} day(s).");
+            CpsLogger.Verbose($"[Cooldown] {recipient.Name} cooldown set, expires in {cooldownDays} day(s).");
         }
 
         public void game_menu_cps_town_courier_missive_command_on_consequence(MenuCallbackArgs args)
@@ -499,9 +500,29 @@ namespace CalradianPostalService.Behaviors
             }
         }
 
+        private static string FormatTraitValue(int v) => v >= 0 ? $"+{v}" : v.ToString();
+
+        private static string FormatRecipientLabel(Hero hero)
+        {
+            int gen = hero.GetTraitLevel(DefaultTraits.Generosity);
+            int val = hero.GetTraitLevel(DefaultTraits.Valor);
+            int hon = hero.GetTraitLevel(DefaultTraits.Honor);
+            int iro = hero.GetTraitLevel(DefaultTraits.PersonaIronic);
+            int rel = hero.GetRelation(Hero.MainHero);
+
+            var parts = new List<string>();
+            if (gen != 0) parts.Add($"G{FormatTraitValue(gen)}");
+            if (val != 0) parts.Add($"V{FormatTraitValue(val)}");
+            if (hon != 0) parts.Add($"H{FormatTraitValue(hon)}");
+            if (iro != 0) parts.Add($"I{FormatTraitValue(iro)}");
+            parts.Add($"R{FormatTraitValue(rel)}");
+
+            return $"{hero.Name}\n{string.Join("  ", parts)}";
+        }
+
         private void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
         {
-            CpsLogger.Debug("Registering courier menus.");
+            CpsLogger.Verbose("Registering courier menus.");
 
             campaignGameStarter.AddGameMenuOption("town", "cps_town_courier", "Find a courier", new GameMenuOption.OnConditionDelegate(game_menu_town_find_courier_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_town_find_courier_on_consequence), false, 4, false);
 
@@ -530,14 +551,14 @@ namespace CalradianPostalService.Behaviors
                 campaignGameStarter.AddGameMenuOption("cps_town_courier_diplomacy", "cps_town_courier_diplomacy_alliance", "Request {CPS_MISSIVE_RECIPIENT} to seek an alliance.", new GameMenuOption.OnConditionDelegate(game_menu_cps_town_courier_diplomacy_alliance_on_condition), new GameMenuOption.OnConsequenceDelegate(game_menu_cps_town_courier_diplomacy_alliance_on_consequence), false, -1, false);
             campaignGameStarter.AddGameMenuOption("cps_town_courier_diplomacy", "cps_town_courier_diplomacy_back", "{=qWAmxyYz}Back to town center", new GameMenuOption.OnConditionDelegate(back_on_condition), (MenuCallbackArgs x) => GameMenu.SwitchToMenu("town"), true, -1, false);
 
-            CpsLogger.Debug("Courier menus registered.");
+            CpsLogger.Verbose("Courier menus registered.");
         }
 
         private void OnDailyTick()
         {
             try
             {
-                CpsLogger.Debug($"{_missives.Count} missives out for delivery.");
+                CpsLogger.Verbose($"{_missives.Count} missives out for delivery.");
                 for (int i = _missives.Count - 1; i >= 0; --i)
                 {
                     if (_missives[i].CampaignTimeArrival <= CampaignTime.Now)
@@ -572,10 +593,18 @@ namespace CalradianPostalService.Behaviors
                     _missiveSyncData = JsonConvert.SerializeObject(sync, settings);
                     dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
 
-                    _personalMissiveCooldownData = JsonConvert.SerializeObject(_personalMissiveCooldowns, settings);
+                    // Store cooldowns as remaining days (double) to avoid CampaignTime deserialization issues.
+                    // Expired cooldowns are omitted — they would allow sending anyway.
+                    var cooldownsRemaining = new Dictionary<string, double>();
+                    foreach (var kvp in _personalMissiveCooldowns)
+                    {
+                        double remaining = (kvp.Value - CampaignTime.Now).ToDays;
+                        if (remaining > 0) cooldownsRemaining[kvp.Key] = remaining;
+                    }
+                    _personalMissiveCooldownData = JsonConvert.SerializeObject(cooldownsRemaining);
                     dataStore.SyncData("_personalMissiveCooldownData", ref _personalMissiveCooldownData);
 
-                    CpsLogger.Debug($"Saved {sync.Count} missives, {_personalMissiveCooldowns.Count} cooldowns.");
+                    CpsLogger.Verbose($"Saved {sync.Count} missives, {cooldownsRemaining.Count} cooldowns.");
                 }
                 else if (dataStore.IsLoading)
                 {
@@ -593,10 +622,15 @@ namespace CalradianPostalService.Behaviors
 
                     dataStore.SyncData("_personalMissiveCooldownData", ref _personalMissiveCooldownData);
                     if (!string.IsNullOrEmpty(_personalMissiveCooldownData))
-                        _personalMissiveCooldowns = JsonConvert.DeserializeObject<Dictionary<string, CampaignTime>>(_personalMissiveCooldownData, settings)
-                            ?? new Dictionary<string, CampaignTime>();
+                    {
+                        var cooldownsRemaining = JsonConvert.DeserializeObject<Dictionary<string, double>>(_personalMissiveCooldownData)
+                            ?? new Dictionary<string, double>();
+                        _personalMissiveCooldowns = cooldownsRemaining.ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => CampaignTime.DaysFromNow((float)kvp.Value));
+                    }
 
-                    CpsLogger.Debug($"Loaded {_missives.Count} missives, {_personalMissiveCooldowns.Count} cooldowns.");
+                    CpsLogger.Verbose($"Loaded {_missives.Count} missives, {_personalMissiveCooldowns.Count} cooldowns.");
                 }
             }
             catch (Exception ex)

@@ -92,7 +92,7 @@ namespace CalradianPostalService.Models
             float roll     = MBRandom.RandomFloat;
             bool  accepted = roll <= chance;
 
-            CpsLogger.Debug(
+            CpsLogger.Verbose(
                 $"[MissiveAlliance] relation:{Recipient.GetRelation(Sender)} honor:{honor} calc:{calculating} " +
                 $"targetRel:{targetRelation:F0} targetRelMod:{targetRelMod:F2} sharedEnemy:{sharedEnemy} " +
                 $"allianceValue:{allianceValue:F2} prestige:{senderPrestige:F2} senderRel:{senderRelMod:F2} charm:{charmBonus:F3} " +
@@ -101,7 +101,7 @@ namespace CalradianPostalService.Models
             if (Sender == Hero.MainHero)
             {
                 Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 20f);
-                CpsLogger.Debug($"[CharmXP] +20 Charm XP granted to {Sender.Name}.");
+                CpsLogger.Verbose($"[CharmXP] +20 Charm XP granted to {Sender.Name}.");
             }
 
             if (!accepted)

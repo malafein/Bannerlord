@@ -34,7 +34,7 @@ namespace CalradianPostalService.Models
             float defianceChance = MissiveAcceptanceHelper.Clamp01(valor * 0.20f);
             float roll1a = MBRandom.RandomFloat;
 
-            CpsLogger.Debug($"[MissiveThreat] valor:{valor} defianceChance:{defianceChance:F2} roll1a:{roll1a:F2}");
+            CpsLogger.Verbose($"[MissiveThreat] valor:{valor} defianceChance:{defianceChance:F2} roll1a:{roll1a:F2}");
 
             if (roll1a <= defianceChance)
             {
@@ -48,7 +48,7 @@ namespace CalradianPostalService.Models
             float amusementChance = MissiveAcceptanceHelper.Clamp01(ironic * 0.15f);
             float roll1b = MBRandom.RandomFloat;
 
-            CpsLogger.Debug($"[MissiveThreat] ironic:{ironic} amusementChance:{amusementChance:F2} roll1b:{roll1b:F2}");
+            CpsLogger.Verbose($"[MissiveThreat] ironic:{ironic} amusementChance:{amusementChance:F2} roll1b:{roll1b:F2}");
 
             if (roll1b <= amusementChance)
             {
@@ -67,7 +67,7 @@ namespace CalradianPostalService.Models
 
             float roll2 = MBRandom.RandomFloat;
 
-            CpsLogger.Debug($"[MissiveThreat] relation:{relation:F0} honor:{honor} honorMult:{honorMult:F2} " +
+            CpsLogger.Verbose($"[MissiveThreat] relation:{relation:F0} honor:{honor} honorMult:{honorMult:F2} " +
                 $"charm:{charmBonus:F3} angerChance:{angerChance:F2} roll2:{roll2:F2}");
 
             if (roll2 <= angerChance)
@@ -76,7 +76,7 @@ namespace CalradianPostalService.Models
                 if (Sender == Hero.MainHero)
                 {
                     Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 15f);
-                    CpsLogger.Debug($"[CharmXP] +15 Charm XP granted to {Sender.Name}.");
+                    CpsLogger.Verbose($"[CharmXP] +15 Charm XP granted to {Sender.Name}.");
                 }
 
                 int maxPenalty = 1;

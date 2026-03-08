@@ -111,9 +111,8 @@ namespace CalradianPostalService
                 Log($"  InnerException: {ex.InnerException.Message}");
         }
 
-        // Only active in DEBUG builds. Writes to rgl_log only (no in-game message).
-        [System.Diagnostics.Conditional("DEBUG")]
-        public static void Debug(string message)
-            => Log($"DEBUG: {message}");
+        // Writes to rgl_log only (no in-game message). Always active; use for verbose diagnostics.
+        public static void Verbose(string message)
+            => Log($"[V] {message}");
     }
 }

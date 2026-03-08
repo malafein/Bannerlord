@@ -91,14 +91,14 @@ namespace CalradianPostalService.Models
             {
                 float renownRate = Math.Max(recipient.Clan.Renown, config.MinimumRenownAffectingFee) / Math.Max(sender.Clan.Renown, config.MinimumRenownAffectingFee);
                 multiplier = renownRate * multiplier;
-                CpsLogger.Debug($"Courier fee renown rate: {renownRate}");
+                CpsLogger.Verbose($"Courier fee renown rate: {renownRate}");
             }
 
             if (config.DistanceAffectsCourierFee)
             {
                 float distance = sender.GetCampaignPosition().Distance(recipient.GetCampaignPosition());
                 multiplier = multiplier * distance;
-                CpsLogger.Debug($"Courier fee distance: {distance}");
+                CpsLogger.Verbose($"Courier fee distance: {distance}");
             }
 
             int fee = (int)Math.Ceiling(config.CourierRate * multiplier);
@@ -121,7 +121,7 @@ namespace CalradianPostalService.Models
                 days = sender.GetCampaignPosition().Distance(recipient.GetCampaignPosition()) / config.MissiveDistancePerDay;
             }
 
-            CpsLogger.Debug($"Missive delivery will take {days} days.");
+            CpsLogger.Verbose($"Missive delivery will take {days} days.");
 
             return CampaignTime.DaysFromNow(config.MissiveDeliveryRate * days);
         }

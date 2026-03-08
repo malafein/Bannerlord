@@ -42,7 +42,7 @@ namespace CalradianPostalService.Models
 
             float roll1 = MBRandom.RandomFloat;
 
-            CpsLogger.Debug($"[MissiveFriendly] relation:{relation:F0} charm:{charmBonus:F3} " +
+            CpsLogger.Verbose($"[MissiveFriendly] relation:{relation:F0} charm:{charmBonus:F3} " +
                 $"generosity:{generosity} earnest:{earnest} curt:{curt} " +
                 $"receptionChance:{receptionChance:F2} roll1:{roll1:F2}");
 
@@ -52,7 +52,7 @@ namespace CalradianPostalService.Models
                 if (Sender == Hero.MainHero)
                 {
                     Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 15f);
-                    CpsLogger.Debug($"[CharmXP] +15 Charm XP granted to {Sender.Name}.");
+                    CpsLogger.Verbose($"[CharmXP] +15 Charm XP granted to {Sender.Name}.");
                 }
 
                 // --- Roll 2: Diminishing returns ---
@@ -60,7 +60,7 @@ namespace CalradianPostalService.Models
                 float improvementChance = MissiveAcceptanceHelper.Clamp01((100f - relation) / 100f);
                 float roll2 = MBRandom.RandomFloat;
 
-                CpsLogger.Debug($"[MissiveFriendly] APPRECIATED improvementChance:{improvementChance:F2} roll2:{roll2:F2}");
+                CpsLogger.Verbose($"[MissiveFriendly] APPRECIATED improvementChance:{improvementChance:F2} roll2:{roll2:F2}");
 
                 if (roll2 <= improvementChance)
                 {
@@ -94,7 +94,7 @@ namespace CalradianPostalService.Models
 
                 float roll3 = MBRandom.RandomFloat;
 
-                CpsLogger.Debug($"[MissiveFriendly] NOT APPRECIATED backfireChance:{backfireChance:F2} roll3:{roll3:F2}");
+                CpsLogger.Verbose($"[MissiveFriendly] NOT APPRECIATED backfireChance:{backfireChance:F2} roll3:{roll3:F2}");
 
                 if (roll3 <= backfireChance)
                 {

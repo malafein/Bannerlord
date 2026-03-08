@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "bannerlord-logs": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/home/malafein/workspace/Bannerlord/GameLogMCP",
+        "python",
+        "server.py"
+      ]
+    }
+  }
+}
