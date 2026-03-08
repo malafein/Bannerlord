@@ -100,6 +100,10 @@ class Step:
     status:        Status    = Status.PENDING
     detected_logs: list[str] = field(default_factory=list)
     auto_patterns: list[str] = field(default_factory=list)
+    # auto_pass: mark this step passed automatically when patterns match
+    auto_pass:     bool      = False
+    # auto_pass_all: require ALL patterns to have matched (default: any one is enough)
+    auto_pass_all: bool      = False
 
 
 def _build_steps(raw: list[dict]) -> list[Step]:
@@ -110,9 +114,24 @@ def _build_steps(raw: list[dict]) -> list[Step]:
             action        = r["action"],
             expected      = r["expected"],
             auto_patterns = r.get("auto_patterns", []),
+            auto_pass     = r.get("auto_pass", False),
+            auto_pass_all = r.get("auto_pass_all", False),
         )
         for r in raw
     ]
+
+
+def _auto_pass_satisfied(step: Step) -> bool:
+    """Return True if the step's auto-pass condition has been met."""
+    if not step.auto_patterns or not step.detected_logs:
+        return False
+    if step.auto_pass_all:
+        # Every pattern must appear in at least one detected log line
+        return all(
+            any(re.search(p, line, re.IGNORECASE) for line in step.detected_logs)
+            for p in step.auto_patterns
+        )
+    return len(step.detected_logs) > 0  # any match is enough
 
 
 # ---------------------------------------------------------------------------
@@ -175,6 +194,7 @@ def _snapshot() -> dict:
                 "expected":      s.expected,
                 "status":        s.status,
                 "detected_logs": s.detected_logs[-6:],
+                "auto_pass":     s.auto_pass,
             }
             for s in steps
         ],
@@ -198,12 +218,14 @@ def _write_mangohud() -> None:
         passed  = sum(1 for s in steps if s.status == Status.PASS)
         failed  = sum(1 for s in steps if s.status == Status.FAIL)
         skipped = sum(1 for s in steps if s.status == Status.SKIP)
+        pending = sum(1 for s in steps if s.status == Status.PENDING)
+        mode    = "AUTO" if cur.auto_pass else "MANUAL"
+        status  = cur.status.upper() if cur.status != Status.PENDING else f"WAITING ({mode})"
         with open(MANGOHUD_FILE, "w") as f:
             f.write(
-                f"{_plan_name}\n"
-                f"{cur.section}\n"
-                f"Step {cur.id}/{total}: {cur.action[:42]}\n"
-                f"Pass:{passed}  Fail:{failed}  Skip:{skipped}"
+                f"{_plan_name}  {passed}✓ {failed}✗ {skipped}— {pending}○\n"
+                f"Step {cur.id}/{total}: {cur.action[:48]}\n"
+                f"{status}"
             )
     except Exception:
         pass
@@ -237,6 +259,16 @@ async def _log_poll_loop() -> None:
                             cur.detected_logs.append(line)
                             state_changed = True
                         break
+
+            # Auto-advance if this step is configured to pass on log detection
+            if state_changed and cur.auto_pass and cur.status == Status.PENDING:
+                if _auto_pass_satisfied(cur):
+                    cur.status = Status.PASS
+                    steps = _state["steps"]
+                    for j in range(_state["cur_idx"] + 1, len(steps)):
+                        if steps[j].status == Status.PENDING:
+                            _state["cur_idx"] = j
+                            break
 
             await _broadcast("logs", {"lines": lines})
             if state_changed:
@@ -380,7 +412,10 @@ main { display: flex; flex: 1; overflow: hidden; }
 
 .cur-card { background: var(--surface); border: 1px solid var(--card); border-radius: 8px; padding: 18px; flex-shrink: 0; }
 .cur-card .sec-name { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--skip); margin-bottom: 6px; }
-.cur-card .step-id  { font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+.cur-card .step-id  { font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; }
+.badge.auto   { background: rgba(86,182,194,0.18); color: var(--cyan); border: 1px solid rgba(86,182,194,0.4); }
+.badge.manual { background: rgba(229,192,123,0.15); color: var(--warn); border: 1px solid rgba(229,192,123,0.35); }
 .cur-card h2 { font-size: 1.05rem; color: var(--bright); line-height: 1.4; margin-bottom: 12px; }
 .expected { background: rgba(152,195,121,0.08); border: 1px solid rgba(152,195,121,0.25); border-radius: 6px; padding: 9px 13px; }
 .expected .lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--pass); margin-bottom: 3px; }
@@ -422,7 +457,7 @@ main { display: flex; flex: 1; overflow: hidden; }
   <div class="content">
     <div class="cur-card">
       <div class="sec-name" id="c-sec"></div>
-      <div class="step-id"  id="c-id"></div>
+      <div class="step-id"><span id="c-id"></span><span id="c-badge"></span></div>
       <h2 id="c-action"></h2>
       <div class="expected"><div class="lbl">Expected</div><p id="c-expected"></p></div>
       <div class="detected" id="c-detected" style="display:none">
@@ -467,6 +502,9 @@ function render(s) {
 
   document.getElementById('c-sec').textContent      = cur.section;
   document.getElementById('c-id').textContent       = `Step ${cur.id}`;
+  const badge = document.getElementById('c-badge');
+  badge.className   = `badge ${cur.auto_pass ? 'auto' : 'manual'}`;
+  badge.textContent = cur.auto_pass ? 'AUTO' : 'MANUAL';
   document.getElementById('c-action').textContent   = cur.action;
   document.getElementById('c-expected').textContent = cur.expected;
 
