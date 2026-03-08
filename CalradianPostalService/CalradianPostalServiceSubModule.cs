@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using log4net;
-using log4net.Config;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
+using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 using CalradianPostalService.Models;
@@ -16,192 +12,108 @@ namespace CalradianPostalService
 {
     public class CalradianPostalServiceSubModule : MBSubModuleBase
     {
-        public static string Version => "e1.0.0";
+        public static string Version { get; private set; } = "unknown";
 
-        public static PostalServiceModel PostalServiceModel => (from m in Campaign.Current.Models.GetGameModels() where m is PostalServiceModel select m).FirstOrDefault() as PostalServiceModel;
+        public static PostalServiceModel PostalServiceModel =>
+            (from m in Campaign.Current.Models.GetGameModels()
+             where m is PostalServiceModel
+             select m).FirstOrDefault() as PostalServiceModel;
 
-        public static Color InfoColor = new Color(0.25f, 0.8f, 0.8f);
-        public static Color ErrorColor = new Color(0.8f, 0.0f, 0.0f);
-
-        private static string ModulePath = $"{BasePath.Name}/Modules/CalradianPostalService";
-        private static string ModuleDataPath = $"{ModulePath}/ModuleData";
-
-        private static readonly ILog log = LogManager.GetLogger(typeof(CalradianPostalServiceSubModule));
-
-        //public override void BeginGameStart(Game game)
-        //{
-        //    base.BeginGameStart(game);
-
-        //    DebugMessage("BegingGameStart called.");
-        //}
-
-        //public override bool DoLoading(Game game)
-        //{
-        //    DebugMessage("DoLoading called.");
-
-        //    return base.DoLoading(game);
-        //}
-
-        //public override void OnCampaignStart(Game game, object starterObject)
-        //{
-        //    base.OnCampaignStart(game, starterObject);
-
-        //    DebugMessage("OnCampaignStart called.");
-        //}
-
-        //public override void OnGameEnd(Game game)
-        //{
-        //    base.OnGameEnd(game);
-
-        //    DebugMessage("OnGameEnd called.");
-        //}
-
-        //public override void OnGameInitializationFinished(Game game)
-        //{
-        //    base.OnGameInitializationFinished(game);
-
-        //    DebugMessage("OnGameInitializationFinished called.");
-        //}
-
-        //public override void OnGameLoaded(Game game, object initializerObject)
-        //{
-        //    base.OnGameLoaded(game, initializerObject);
-
-        //    DebugMessage("OnGameLoaded called.");
-        //}
-
-        //public override void OnMissionBehaviourInitialize(Mission mission)
-        //{
-        //    base.OnMissionBehaviourInitialize(mission);
-
-        //    DebugMessage("OnMissionBehaviourInitialize called.");
-        //}
-
-        //public override void OnMultiplayerGameStart(Game game, object starterObject)
-        //{
-        //    base.OnMultiplayerGameStart(game, starterObject);
-
-        //    DebugMessage("OnMultiplayerGameStart called.");
-        //}
-
-        //public override void OnNewGameCreated(Game game, object initializerObject)
-        //{
-        //    base.OnNewGameCreated(game, initializerObject);
-
-        //    DebugMessage("OnNewGameCreated called.");
-        //}
-
-        //protected override void OnApplicationTick(float dt)
-        //{
-        //    base.OnApplicationTick(dt);
-
-        //    //DebugMessage("OnApplicationTick called.");
-        //}
+        public static readonly string ModuleName = "CalradianPostalService";
+        public static readonly string ModulePath = $"{BasePath.Name}/Modules/{ModuleName}";
+        public static readonly string ModuleDataPath = $"{ModulePath}/ModuleData";
 
         protected override void OnBeforeInitialModuleScreenSetAsRoot()
         {
             base.OnBeforeInitialModuleScreenSetAsRoot();
-            //DebugMessage("OnBeforeInitialModuleScreenSetAsRoot called.");
-
-            string versionInfo = $"CalradianPostalService Version {Version} loaded.";
-            InfoMessage(versionInfo);
+            CpsLogger.Info($"Version {Version} loaded.");
         }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
         {
             base.OnGameStart(game, gameStarterObject);
-
             try
             {
-                DebugMessage("OnGameStart called.");
                 if (game.GameType is Campaign)
                 {
                     CampaignGameStarter campaignGameStarter = gameStarterObject as CampaignGameStarter;
                     campaignGameStarter.AddModel(new DefaultPostalServiceModel());
                     campaignGameStarter.AddBehavior(new PostalServiceBehavior());
+                    CpsLogger.Log("Model and behavior registered.");
                 }
             }
             catch (Exception ex)
             {
-                DebugMessage(ex);
+                CpsLogger.Error(ex, "OnGameStart failed");
             }
         }
 
         protected override void OnSubModuleLoad()
         {
             base.OnSubModuleLoad();
-
-            // TODO: read in configs and hook methods w/ harmony
             try
             {
-                XmlConfigurator.Configure(new System.IO.FileInfo($"{ModuleDataPath}/log4net.config.xml"));
-                //DebugMessage("OnSubModuleLoad called.");
+                var doc = new System.Xml.XmlDocument();
+                doc.Load($"{ModulePath}/SubModule.xml");
+                Version = doc.SelectSingleNode("/Module/Version/@value")?.Value ?? "unknown";
+                CpsLogger.Log($"Version read from SubModule.xml: {Version}");
+
+                ModuleConfiguration.LoadConfiguration();
+                CpsLogger.Log("Configuration loaded.");
             }
-            catch(Exception exception1)
+            catch (Exception ex)
             {
-                string message;
-                Exception exception = exception1;
-                string str = exception.Message;
-                Exception innerException = exception.InnerException;
-                if (innerException != null)
-                {
-                    message = innerException.Message;
-                }
-                else
-                {
-                    message = null;
-                }
-                System.Windows.Forms.MessageBox.Show(string.Concat("Error:\n", str, " \n\n", message));
-                DebugMessage(message);
+                // CpsLogger.Error can't be used here if it fails before game APIs are ready,
+                // so fall back to DisplayMessage directly.
+                InformationManager.DisplayMessage(new InformationMessage(
+                    $"[CalradianPostalService] Init error: {ex.Message}",
+                    new Color(0.8f, 0.0f, 0.0f)));
             }
         }
+    }
 
-        //protected override void OnSubModuleUnloaded()
-        //{
-        //    base.OnSubModuleUnloaded();
+    /// <summary>
+    /// Logging for CalradianPostalService. All output goes to the game's rgl_log
+    /// (same file as other game events) via Debug.Print. Info and Error levels
+    /// also show an in-game message.
+    /// </summary>
+    internal static class CpsLogger
+    {
+        private const string Prefix = "[CalradianPostalService]";
+        private static readonly Color InfoColor = new Color(0.25f, 0.8f, 0.8f);
+        private static readonly Color ErrorColor = new Color(0.8f, 0.0f, 0.0f);
 
-        //    DebugMessage("OnSubModuleUnloaded called.");
-        //}
+        // Writes to rgl_log only. Use for trace/diagnostic entries.
+        public static void Log(string message)
+            => TaleWorlds.Library.Debug.Print($"{Prefix} {message}", 0, TaleWorlds.Library.Debug.DebugColor.White, 17592186044416UL);
 
-        private static void DebugMessage(string msg)
+        // Shows in-game (cyan) and writes to rgl_log. Use for player-visible status.
+        public static void Info(string message)
         {
-#if DEBUG
-            DebugMessage(msg, log);
-#endif
+            InformationManager.DisplayMessage(new InformationMessage($"{Prefix} {message}", InfoColor));
+            Log(message);
         }
 
-        private static void DebugMessage(Exception ex)
+        // Shows in-game (red) and writes to rgl_log.
+        public static void Error(string message)
         {
-            DebugMessage(ex, log);
+            InformationManager.DisplayMessage(new InformationMessage($"{Prefix} {message}", ErrorColor));
+            Log($"ERROR: {message}");
         }
 
-        internal static void DebugMessage(string msg, ILog log)
+        // Logs full exception details to rgl_log; shows brief message in-game.
+        public static void Error(Exception ex, string context = null)
         {
-#if DEBUG
-            InformationManager.DisplayMessage(new InformationMessage(msg));
-            log.Debug(msg);
-#endif
+            string label = context != null ? $"{context}: {ex.Message}" : ex.Message;
+            Error(label);
+            Log($"  StackTrace: {ex.StackTrace}");
+            if (ex.InnerException != null)
+                Log($"  InnerException: {ex.InnerException.Message}");
         }
 
-        internal static void DebugMessage(Exception exception, ILog log)
-        {
-#if DEBUG
-            string msg = $"{exception.Message}\n{exception.InnerException}\n{exception.StackTrace}";
-            InformationManager.DisplayMessage(new InformationMessage(msg));
-            log.Debug(msg);
-#endif
-        }
-
-        internal static void InfoMessage(string msg, ILog log = null)
-        {
-            InformationManager.DisplayMessage(new InformationMessage(msg, InfoColor));
-            log?.Info(msg);
-        }
-
-        internal static void ErrorMessage(string msg, ILog log = null)
-        {
-            InformationManager.DisplayMessage(new InformationMessage(msg, ErrorColor));
-            log?.Info(msg);
-        }
+        // Only active in DEBUG builds. Writes to rgl_log only (no in-game message).
+        [System.Diagnostics.Conditional("DEBUG")]
+        public static void Debug(string message)
+            => Log($"DEBUG: {message}");
     }
 }

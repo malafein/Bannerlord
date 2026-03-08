@@ -4,16 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <ModRootPath>/home/malafein/.steam/steam/steamapps/common/Mount &amp; Blade II Bannerlord/Modules/CalradianPostalService/</ModRootPath>
-    <ModDeployPath>$(ModRootPath)bin/Win64_Shipping_Client/</ModDeployPath>
-    <ModDataPath>$(ModRootPath)ModuleData/</ModDataPath>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.0.0.9" />
-    <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3">
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3">
       <!-- Game ships Newtonsoft.Json; compile-only reference -->
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
@@ -23,8 +18,6 @@
     <Exec Command="mkdir -p '$(ModDeployPath)'" />
     <Exec Command="mkdir -p '$(ModDataPath)'" />
     <Exec Command="cp '$(OutputPath)$(AssemblyName).dll' '$(ModDeployPath)'" />
-    <Exec Command="cp '$(OutputPath)0Harmony.dll' '$(ModDeployPath)'" />
-    <Exec Command="cp '$(OutputPath)log4net.dll' '$(ModDeployPath)'" />
     <Exec Command="cp '$(ProjectDir)SubModule.xml' '$(ModRootPath)'" />
     <Exec Command="cp '$(ProjectDir)ModuleData/'* '$(ModDataPath)'" />
     <Message Importance="high" Text="Deployed $(AssemblyName) to Game Folder" />

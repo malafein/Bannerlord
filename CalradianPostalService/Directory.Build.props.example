@@ -1,7 +1,16 @@
 <Project>
+  <!--
+    Copy this file to Directory.Build.props and set BannerlordPath to your game install.
+
+    Linux (Steam):   /home/USERNAME/.steam/steam/steamapps/common/Mount & Blade II Bannerlord
+    Windows (Steam): C:/Program Files (x86)/Steam/steamapps/common/Mount & Blade II Bannerlord
+  -->
   <PropertyGroup>
-    <BannerlordPath>/home/malafein/.steam/steam/steamapps/common/Mount &amp; Blade II Bannerlord</BannerlordPath>
+    <BannerlordPath>REPLACE_WITH_YOUR_BANNERLORD_PATH</BannerlordPath>
     <GameBinPath>$(BannerlordPath)/bin/Win64_Shipping_Client</GameBinPath>
+    <ModRootPath>$(BannerlordPath)/Modules/CalradianPostalService/</ModRootPath>
+    <ModDeployPath>$(ModRootPath)bin/Win64_Shipping_Client/</ModDeployPath>
+    <ModDataPath>$(ModRootPath)ModuleData/</ModDataPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,5 +22,6 @@
     <Reference Include="$(GameBinPath)/TaleWorlds.PlayerServices.dll" Private="false" />
     <Reference Include="$(GameBinPath)/TaleWorlds.ObjectSystem.dll" Private="false" />
     <Reference Include="$(GameBinPath)/TaleWorlds.SaveSystem.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.Engine.dll" Private="false" />
   </ItemGroup>
 </Project>

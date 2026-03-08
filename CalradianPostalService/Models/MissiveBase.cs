@@ -7,7 +7,6 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.Core;
 
-using CPSModule = CalradianPostalService.CalradianPostalServiceSubModule;
 
 namespace CalradianPostalService.Models
 {
@@ -19,6 +18,8 @@ namespace CalradianPostalService.Models
         public Hero Sender { get; set; }
         public string Text { get; set; }
 
+        public Dictionary<object, object> Args { get; set; }
+
         protected MissiveBase() { }
         protected MissiveBase(MissiveSyncData data) 
         {
@@ -27,21 +28,20 @@ namespace CalradianPostalService.Models
             Recipient = Hero.FindFirst((Hero h) => { return h.StringId == data.RecipientId; });
             Sender = Hero.FindFirst((Hero h) => { return h.StringId == data.SenderId; });
             Text = data.Text;
+            Args = data.Args;
         }
 
         public virtual void OnDelivery()
         {
-            throw new NotImplementedException();
         }
 
         public virtual void OnReturn()
         {
-            throw new NotImplementedException();
         }
 
         public virtual void OnSend()
         {
-            int gold = CPSModule.PostalServiceModel.GetCourierFee(this.Sender, this.Recipient);
+            int gold = CalradianPostalServiceSubModule.PostalServiceModel.GetCourierFee(this.Sender, this.Recipient);
             GiveGoldAction.ApplyBetweenCharacters(this.Sender, null, gold, false);
         }
     }

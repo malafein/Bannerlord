@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <!-- Set this to your Bannerlord installation root. -->
+    <!-- Linux/Steam example: -->
+    <BannerlordPath>/home/YOUR_USERNAME/.steam/steam/steamapps/common/Mount &amp; Blade II Bannerlord</BannerlordPath>
+    <!-- Windows/Steam example: -->
+    <!-- <BannerlordPath>C:\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord</BannerlordPath> -->
+    <GameBinPath>$(BannerlordPath)/bin/Win64_Shipping_Client</GameBinPath>
+  </PropertyGroup>
+
+  <!-- Compile-time references so the analyzer can resolve game types. -->
+  <ItemGroup>
+    <Reference Include="$(GameBinPath)/TaleWorlds.CampaignSystem.dll" Private="false" />
+    <Reference Include="$(GameBinPath)/TaleWorlds.Core.dll" Private="false" />
+  </ItemGroup>
+</Project>

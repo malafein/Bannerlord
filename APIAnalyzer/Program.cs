@@ -8,7 +8,13 @@ namespace APIAnalyzer
 {
     class Program
     {
-        static readonly string GameBinPath = @"/home/malafein/.steam/steam/steamapps/common/Mount & Blade II Bannerlord/bin/Win64_Shipping_Client/";
+        // Well-known default install paths, checked in order if no path is configured.
+        static readonly string[] DefaultGamePaths = {
+            @"/home/malafein/.steam/steam/steamapps/common/Mount & Blade II Bannerlord",
+            @"/home/steamuser/.steam/steam/steamapps/common/Mount & Blade II Bannerlord",
+            @"C:\Program Files (x86)\Steam\steamapps\common\Mount & Blade II Bannerlord",
+            @"C:\Program Files\Steam\steamapps\common\Mount & Blade II Bannerlord",
+        };
 
         // Core assemblies always loaded. More are loaded dynamically when using --search.
         static readonly string[] DefaultAssemblies = {
@@ -35,6 +41,7 @@ namespace APIAnalyzer
             bool searchMode = HasFlag(args, "--search",  "-s");
             string typeArg  = GetArg(args, "--type");
             string searchArg = GetArg(args, "--search") ?? (searchMode ? GetPositionalArg(args) : null);
+            string gamePathArg = GetArg(args, "--game-path");
 
             if (HasFlag(args, "--help", "-h"))
             {
@@ -42,12 +49,20 @@ namespace APIAnalyzer
                 return;
             }
 
-            Console.WriteLine($"Game bin path: {GameBinPath}");
+            string gamePath = ResolveGamePath(gamePathArg, verbose);
+            if (gamePath == null)
+            {
+                Console.Error.WriteLine("ERROR: Could not locate Bannerlord installation.");
+                Console.Error.WriteLine("  Set the BANNERLORD_PATH environment variable, or pass --game-path <path>.");
+                Environment.Exit(1);
+                return;
+            }
+
+            string gameBinPath = Path.Combine(gamePath, "bin", "Win64_Shipping_Client");
+            Console.WriteLine($"Game path: {gamePath}");
             Console.WriteLine();
 
-            // Load game assemblies.
-            bool loadAll = searchArg != null; // search needs all DLLs
-            var assemblies = LoadAssemblies(loadAll, verbose);
+            var assemblies = LoadAssemblies(gameBinPath, searchArg != null, verbose);
             Console.WriteLine();
 
             if (searchArg != null)
@@ -75,13 +90,43 @@ namespace APIAnalyzer
 
         // -------------------------------------------------------------------------
 
-        static Dictionary<string, Assembly> LoadAssemblies(bool all, bool verbose)
+        static string ResolveGamePath(string explicitArg, bool verbose)
+        {
+            // 1. Explicit CLI argument
+            if (explicitArg != null)
+            {
+                if (Directory.Exists(explicitArg)) return explicitArg;
+                Console.Error.WriteLine($"[WARN] --game-path does not exist: {explicitArg}");
+            }
+
+            // 2. Environment variable
+            string envPath = Environment.GetEnvironmentVariable("BANNERLORD_PATH");
+            if (!string.IsNullOrEmpty(envPath))
+            {
+                if (Directory.Exists(envPath)) return envPath;
+                Console.Error.WriteLine($"[WARN] BANNERLORD_PATH does not exist: {envPath}");
+            }
+
+            // 3. Known default install paths
+            foreach (var candidate in DefaultGamePaths)
+            {
+                if (Directory.Exists(candidate))
+                {
+                    if (verbose) Console.WriteLine($"Auto-detected game path: {candidate}");
+                    return candidate;
+                }
+            }
+
+            return null;
+        }
+
+        static Dictionary<string, Assembly> LoadAssemblies(string binPath, bool all, bool verbose)
         {
             var loaded = new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
 
             IEnumerable<string> paths = all
-                ? Directory.GetFiles(GameBinPath, "*.dll")
-                : DefaultAssemblies.Select(n => Path.Combine(GameBinPath, n + ".dll"));
+                ? Directory.GetFiles(binPath, "*.dll")
+                : DefaultAssemblies.Select(n => Path.Combine(binPath, n + ".dll"));
 
             foreach (var path in paths)
             {
@@ -98,7 +143,6 @@ namespace APIAnalyzer
                 }
                 catch
                 {
-                    // Skip unloadable assemblies silently when bulk-loading
                     if (verbose) Console.WriteLine($"[SKIP] {Path.GetFileName(path)}");
                 }
             }
@@ -227,18 +271,24 @@ namespace APIAnalyzer
             Console.WriteLine("Usage:");
             Console.WriteLine("  dotnet run --project APIAnalyzer/APIAnalyzer.csproj [options]");
             Console.WriteLine();
+            Console.WriteLine("Game path resolution (first match wins):");
+            Console.WriteLine("  1. --game-path <path>        Explicit path to Bannerlord install root");
+            Console.WriteLine("  2. BANNERLORD_PATH env var   Set in shell profile for convenience");
+            Console.WriteLine("  3. Auto-detect               Checks common Steam install locations");
+            Console.WriteLine();
             Console.WriteLine("Options:");
-            Console.WriteLine("  (no args)                  Inspect default target types with keyword filter");
-            Console.WriteLine("  --all, -a                  Show all members (no keyword filter)");
-            Console.WriteLine("  --type <FullTypeName>      Inspect a specific type by full name");
-            Console.WriteLine("  --search <partial-name>    Search all assemblies for types matching the name");
-            Console.WriteLine("  --verbose, -v              Show assembly loading details");
-            Console.WriteLine("  --help, -h                 Show this help");
+            Console.WriteLine("  (no args)                    Inspect default target types with keyword filter");
+            Console.WriteLine("  --all, -a                    Show all members (no keyword filter)");
+            Console.WriteLine("  --type <FullTypeName>        Inspect a specific type by full name");
+            Console.WriteLine("  --search <partial-name>      Search all assemblies for types matching the name");
+            Console.WriteLine("  --verbose, -v                Show assembly loading details");
+            Console.WriteLine("  --help, -h                   Show this help");
             Console.WriteLine();
             Console.WriteLine("Examples:");
-            Console.WriteLine("  dotnet run ...                                   # default inspection");
-            Console.WriteLine("  dotnet run ... -- --search SkillLeveling         # find a type by partial name");
+            Console.WriteLine("  dotnet run ...                                                   # default inspection");
+            Console.WriteLine("  dotnet run ... -- --search SkillLeveling                        # find a type by partial name");
             Console.WriteLine("  dotnet run ... -- --type TaleWorlds.CampaignSystem.GameComponents.DefaultPartyMoraleModel --all");
+            Console.WriteLine("  BANNERLORD_PATH=/path/to/game dotnet run ...                    # explicit path via env");
         }
     }
 

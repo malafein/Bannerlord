@@ -32,6 +32,13 @@ project.fragment.lock.json
 *.log
 *.binlog
 
+# Local build configuration (copy from *.example and fill in your paths)
+Directory.Build.props
+
+# VS/SDK artifacts no longer needed with SDK-format projects
+app.config
+packages.config
+
 # Game logs symlink
 GameLogs
 
