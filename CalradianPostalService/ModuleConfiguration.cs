@@ -25,6 +25,11 @@ namespace CalradianPostalService
 
             public bool DistanceAffectsDeliveryTime = false;
             public float MissiveDistancePerDay = 1000.0f;
+
+            // Personal missives (friendly/threat) use a flat fee instead of the distance-based rate
+            public int PersonalMissiveBaseFee = 50;
+            // Days before another personal missive can be sent to the same recipient
+            public int PersonalMissiveCooldownDays = 7;
         }
 
         public class MissiveOptions

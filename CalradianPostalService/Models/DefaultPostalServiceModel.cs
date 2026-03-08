@@ -36,6 +36,16 @@ namespace CalradianPostalService.Models
             return new MBReadOnlyList<Hero>(validRecipients);
         }
 
+        public override MBReadOnlyList<IFaction> GetValidPeaceTargets(Hero sender, Hero recipient)
+        {
+            var validTargets = (from f in Campaign.Current.Factions
+                                where !f.IsBanditFaction
+                                   && recipient.MapFaction.IsAtWarWith(f)
+                                orderby f.Name.ToString()
+                                select f).ToList();
+            return new MBReadOnlyList<IFaction>(validTargets);
+        }
+
         public override MBReadOnlyList<Kingdom> GetValidWarDeclarationTargets(Hero sender, Hero recipient)
         {
             bool recipientIsRuler = recipient.Clan?.Kingdom != null
@@ -96,6 +106,11 @@ namespace CalradianPostalService.Models
                 fee = Math.Min(fee, config.MaximumCourierFee);
 
             return Math.Max(fee, config.MinimumCourierFee);
+        }
+
+        public override int GetPersonalMissiveFee(Hero sender, Hero recipient)
+        {
+            return config.PersonalMissiveBaseFee;
         }
 
         public override CampaignTime GetMissiveDeliveryTime(Hero sender, Hero recipient)

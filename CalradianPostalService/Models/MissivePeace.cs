@@ -11,6 +11,7 @@ namespace CalradianPostalService.Models
 {
     public class MissivePeace : MissiveBase, IMissive
     {
+        public enum Arg : int { TargetFactionId }
 
         public MissivePeace() { }
         public MissivePeace(MissiveSyncData data) : base(data) { }
@@ -24,21 +25,76 @@ namespace CalradianPostalService.Models
         {
             base.OnDelivery();
 
-            if (!Recipient.MapFaction.IsAtWarWith(Sender.MapFaction)) return;
+            if (Args == null || !Args.ContainsKey(Arg.TargetFactionId))
+            {
+                CpsLogger.Error("Target Faction arg not provided.");
+                return;
+            }
+
+            IFaction targetFaction = Campaign.Current.Factions
+                .FirstOrDefault(f => f.StringId == Args[Arg.TargetFactionId].ToString());
+            if (targetFaction == null)
+            {
+                CpsLogger.Error("Target Faction not found.");
+                return;
+            }
+
+            // Nothing to do if they're no longer at war with the target
+            if (!Recipient.MapFaction.IsAtWarWith(targetFaction)) return;
 
             // --- Traits ---
-            int mercy      = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Mercy);
+            int mercy       = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Mercy);
             int calculating = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Calculating);
+            int valor       = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Valor);
 
             // Calculating lords weigh their current position: more wars or fewer fiefs = more receptive
-            int  warCount    = Recipient.MapFaction.FactionsAtWarWith.Count;
-            int  fiefsOwned  = Recipient.Clan?.Fiefs?.Count ?? 0;
-            // A lord under pressure (many wars, few fiefs) gets a bonus for calculating lords
-            float pressureScore = MissiveAcceptanceHelper.Clamp11((warCount - 1) * 0.2f - fiefsOwned * 0.05f);
+            int   warCount       = Recipient.MapFaction.FactionsAtWarWith.Count;
+            int   fiefsOwned     = Recipient.Clan?.Fiefs?.Count ?? 0;
+            float pressureScore  = MissiveAcceptanceHelper.Clamp11((warCount - 1) * 0.2f - fiefsOwned * 0.05f);
 
-            float chance = MissiveAcceptanceHelper.RelationBase(Sender, Recipient); // 0–0.50
-            chance += mercy      * 0.12f;  // merciful lords want to end suffering
-            chance += calculating * (0.08f + pressureScore * 0.08f); // pragmatic lords favour peace when losing
+            // Military balance of this specific war: is the recipient losing to the target?
+            float targetStr    = targetFaction.CurrentTotalStrength;
+            float recipientStr = (float)Recipient.MapFaction.CurrentTotalStrength;
+            float warStrengthMod = MissiveAcceptanceHelper.Clamp11(
+                MissiveAcceptanceHelper.StrengthRatio(targetStr, recipientStr) - 1f);
+
+            // Sender credibility and relationship
+            float senderPrestige = MissiveAcceptanceHelper.SenderPrestige(Sender);
+            float senderRelMod   = MissiveAcceptanceHelper.Clamp11(Recipient.GetRelation(Sender) / 100f) * 0.15f;
+            float charmBonus     = MissiveAcceptanceHelper.CharmBonus(Sender);
+
+            // When brokering peace with a third party, what matters is how the recipient
+            // feels about the target faction's leader — not the sender's faction leader.
+            // When the target IS the sender's faction, use the sender's faction leader relation instead.
+            float relationMod;
+            bool targetIsSenderFaction = targetFaction == Sender.MapFaction;
+            if (targetIsSenderFaction)
+            {
+                // Recipient's relation with sender's faction leader (original behaviour)
+                Hero senderFactionLeader = Sender.MapFaction?.Leader;
+                relationMod = (senderFactionLeader != null && senderFactionLeader != Sender)
+                    ? MissiveAcceptanceHelper.Clamp11(Recipient.GetRelation(senderFactionLeader) / 100f) * 0.10f
+                    : 0f;
+            }
+            else
+            {
+                // Recipient's relation with the target faction's leader — negative means they hate them
+                // and are less willing to make peace; positive means they're open to reconciliation
+                Hero targetLeader = targetFaction.Leader;
+                relationMod = targetLeader != null
+                    ? MissiveAcceptanceHelper.Clamp11(Recipient.GetRelation(targetLeader) / 100f) * 0.15f
+                    : 0f;
+            }
+
+            float chance = 0.05f              // minimum floor
+                + senderPrestige
+                + senderRelMod
+                + relationMod
+                + charmBonus
+                + (-valor)    * 0.05f         // cowards want out of war; brave lords are reluctant to yield
+                + mercy       * 0.12f         // merciful lords want to end suffering
+                + calculating * (0.08f + pressureScore * 0.08f)
+                + warStrengthMod * (0.05f + Math.Max(0f, calculating * 0.05f));
 
             chance = MissiveAcceptanceHelper.Clamp01(
                 chance * ModuleConfiguration.Instance.Missives.OfferPeaceDecisionFactor);
@@ -47,14 +103,20 @@ namespace CalradianPostalService.Models
             bool  accepted = roll <= chance;
 
             CpsLogger.Debug(
-                $"[MissivePeace] relation:{Recipient.GetRelation(Sender)} mercy:{mercy} calc:{calculating} " +
-                $"pressure:{pressureScore:F2} chance:{chance:F2} roll:{roll:F2} accepted:{accepted}");
+                $"[MissivePeace] target:{targetFaction.Name} relation:{Recipient.GetRelation(Sender)} " +
+                $"mercy:{mercy} calc:{calculating} valor:{valor} " +
+                $"pressure:{pressureScore:F2} warStrength:{warStrengthMod:F2} prestige:{senderPrestige:F2} " +
+                $"senderRel:{senderRelMod:F2} relationMod:{relationMod:F2} charm:{charmBonus:F3} " +
+                $"chance:{chance:F2} roll:{roll:F2} accepted:{accepted}");
+
+            if (Sender == Hero.MainHero)
+                Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 20f);
 
             if (!accepted)
             {
                 if (Hero.MainHero == Sender)
                     CpsLogger.Info(
-                        $"{Recipient} has rejected your offer of peace.");
+                        $"{Recipient} has rejected your request for peace with {targetFaction.Name}.");
                 return;
             }
 
@@ -62,20 +124,18 @@ namespace CalradianPostalService.Models
             {
                 if (Hero.MainHero == Sender)
                     CpsLogger.Info(
-                        $"{Recipient} has accepted your offer and will bring it before their council.");
+                        $"{Recipient} has agreed and will bring a peace proposal before their council.");
 
-                // Recipient personally agrees — now brings it to their kingdom council to vote
-                var decision = new MakePeaceKingdomDecision(Recipient.Clan, Sender.MapFaction, 0, 0, false, true);
+                var decision = new MakePeaceKingdomDecision(Recipient.Clan, targetFaction, 0, 0, false, true);
                 Recipient.Clan.Kingdom.AddDecision(decision, false);
             }
             else
             {
-                // Independent clan — no council, peace accepted directly
                 if (Hero.MainHero == Sender)
                     CpsLogger.Info(
-                        $"{Recipient} has accepted your offer of peace.");
+                        $"{Recipient} has agreed to make peace with {targetFaction.Name}.");
 
-                MakePeaceAction.Apply(Sender.MapFaction, Recipient.MapFaction);
+                MakePeaceAction.Apply(Recipient.MapFaction, targetFaction);
             }
         }
     }

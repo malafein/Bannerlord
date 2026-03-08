@@ -81,10 +81,23 @@ namespace CalradianPostalService.Models
             int calculating = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Calculating);
             int honor      = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Honor);
 
+            // --- Self-interest: recipient's existing hostility toward the target ---
+            float targetRelation  = targetKingdom.Leader != null ? (float)Recipient.GetRelation(targetKingdom.Leader) : 0f;
+            float targetHostility = MissiveAcceptanceHelper.Clamp01(-targetRelation / 100f) * 0.20f; // 0–0.20
+
+            // --- Sender credibility and relationship ---
+            float senderPrestige = MissiveAcceptanceHelper.SenderPrestige(Sender);
+            float senderRelMod   = MissiveAcceptanceHelper.Clamp11(Recipient.GetRelation(Sender) / 100f) * 0.15f; // -0.15–+0.15
+            float charmBonus     = MissiveAcceptanceHelper.CharmBonus(Sender);
+
             // --- Base formula (shared by all branches) ---
-            float chance = MissiveAcceptanceHelper.RelationBase(Sender, Recipient); // 0–0.50
-            chance += valor      *  0.12f;   // brave lords embrace war
-            chance -= calculating * 0.10f;   // cautious lords resist
+            float chance = 0.05f              // minimum floor
+                + targetHostility
+                + senderPrestige
+                + senderRelMod
+                + charmBonus;
+            chance += valor      *  0.12f;    // brave lords embrace war
+            chance -= calculating * 0.10f;    // cautious lords resist
             // Strength: everyone weighs the odds; calculating lords weigh them more
             chance += strengthMod * (0.06f + Math.Max(0f, calculating * 0.06f));
 
@@ -123,7 +136,12 @@ namespace CalradianPostalService.Models
 
             CpsLogger.Debug(
                 $"[MissiveWar] relation:{Recipient.GetRelation(Sender)} valor:{valor} calc:{calculating} honor:{honor} " +
-                $"strengthMod:{strengthMod:F2} chance:{chance:F2} roll:{roll:F2} accepted:{accepted}");
+                $"targetRel:{targetRelation:F0} targetHostility:{targetHostility:F2} strength:{strengthMod:F2} " +
+                $"prestige:{senderPrestige:F2} senderRel:{senderRelMod:F2} charm:{charmBonus:F3} " +
+                $"chance:{chance:F2} roll:{roll:F2} accepted:{accepted}");
+
+            if (Sender == Hero.MainHero)
+                Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 20f);
 
             if (!accepted)
             {

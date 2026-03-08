@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.Core;
 
 namespace CalradianPostalService.Models
 {
@@ -21,6 +22,30 @@ namespace CalradianPostalService.Models
         /// <summary>Clamps a value to [-1, 1].</summary>
         internal static float Clamp11(float value)
             => Math.Max(-1f, Math.Min(1f, value));
+
+        /// <summary>
+        /// A -0.10 to +0.15 modifier based on the hero's Charm skill, on an upward curve.
+        /// Skill ~85 = 0 (breakeven). Low Charm actively hurts — a clumsy letter does damage.
+        /// Higher levels accelerate: 150 ≈ +5%, 200 ≈ +9%, 300 = +15%.
+        /// </summary>
+        internal static float CharmBonus(Hero hero)
+        {
+            if (hero == null) return 0f;
+            int charm = hero.GetSkillValue(DefaultSkills.Charm);
+            float t       = Math.Min(charm, 300) / 300f;
+            float curved  = (float)Math.Pow(t, 0.7); // convex — higher levels hit harder
+            return -0.10f + curved * 0.25f;           // -0.10 at skill 0, +0.15 at skill 300
+        }
+
+        /// <summary>
+        /// A 0–0.08 prestige bonus based on the sender's clan tier (capped at 6).
+        /// Represents the weight a well-known, high-status lord carries in diplomacy.
+        /// </summary>
+        internal static float SenderPrestige(Hero sender)
+        {
+            int tier = Math.Min(sender.Clan?.Tier ?? 0, 6);
+            return tier / 6f * 0.08f;
+        }
 
         /// <summary>
         /// Base acceptance chance derived from relationship alone.

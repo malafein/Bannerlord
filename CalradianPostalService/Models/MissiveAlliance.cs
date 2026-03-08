@@ -49,7 +49,7 @@ namespace CalradianPostalService.Models
             if (Recipient.MapFaction.IsAtWarWith(targetKingdom)) return;
 
             // --- Traits ---
-            int honor      = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Honor);
+            int honor       = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Honor);
             int calculating = MissiveAcceptanceHelper.Trait(Recipient, DefaultTraits.Calculating);
 
             // --- Strength: is the target a strategically valuable ally? ---
@@ -58,11 +58,33 @@ namespace CalradianPostalService.Models
             float allianceValue = MissiveAcceptanceHelper.Clamp11(
                 MissiveAcceptanceHelper.StrengthRatio(targetKingdom.CurrentTotalStrength, avgKingdomStr) - 1f);
 
-            float chance = MissiveAcceptanceHelper.RelationBase(Sender, Recipient); // 0–0.50
-            chance += honor      *  0.12f;  // honorable lords value formal commitments
-            chance += calculating * 0.10f;  // calculating lords appreciate strategic alliances
-            // Strategic value of the target kingdom, weighted by how calculating the lord is
-            chance += allianceValue * (0.05f + Math.Max(0f, calculating * 0.06f));
+            // --- Recipient's existing relationship with the target kingdom ---
+            // A lord won't warmly embrace an alliance with a kingdom they distrust
+            float targetRelation = targetKingdom.Leader != null
+                ? (float)Recipient.GetRelation(targetKingdom.Leader) : 0f;
+            float targetRelMod = MissiveAcceptanceHelper.Clamp11(targetRelation / 100f) * 0.20f; // -0.20–+0.20
+
+            // --- Shared enemies: fighting the same foe makes alliance obviously valuable ---
+            Kingdom recipientKingdom = Recipient.Clan?.Kingdom;
+            bool sharedEnemy = recipientKingdom != null
+                && Kingdom.All.Any(k => !k.IsBanditFaction
+                    && k.IsAtWarWith(recipientKingdom) && k.IsAtWarWith(targetKingdom));
+            float sharedEnemyBonus = sharedEnemy ? 0.10f : 0f;
+
+            // --- Sender credibility and relationship ---
+            float senderPrestige = MissiveAcceptanceHelper.SenderPrestige(Sender);
+            float senderRelMod   = MissiveAcceptanceHelper.Clamp11(Recipient.GetRelation(Sender) / 100f) * 0.15f; // -0.15–+0.15
+            float charmBonus     = MissiveAcceptanceHelper.CharmBonus(Sender);
+
+            float chance = 0.05f              // minimum floor
+                + targetRelMod
+                + sharedEnemyBonus
+                + senderPrestige
+                + senderRelMod
+                + charmBonus
+                + honor       *  0.12f        // honorable lords value formal commitments
+                + calculating *  0.10f        // calculating lords appreciate strategic alliances
+                + allianceValue * (0.05f + Math.Max(0f, calculating * 0.06f)); // strategic weight of the target
 
             chance = MissiveAcceptanceHelper.Clamp01(
                 chance * ModuleConfiguration.Instance.Missives.AllianceDecisionFactor);
@@ -72,7 +94,12 @@ namespace CalradianPostalService.Models
 
             CpsLogger.Debug(
                 $"[MissiveAlliance] relation:{Recipient.GetRelation(Sender)} honor:{honor} calc:{calculating} " +
-                $"allianceValue:{allianceValue:F2} chance:{chance:F2} roll:{roll:F2} accepted:{accepted}");
+                $"targetRel:{targetRelation:F0} targetRelMod:{targetRelMod:F2} sharedEnemy:{sharedEnemy} " +
+                $"allianceValue:{allianceValue:F2} prestige:{senderPrestige:F2} senderRel:{senderRelMod:F2} charm:{charmBonus:F3} " +
+                $"chance:{chance:F2} roll:{roll:F2} accepted:{accepted}");
+
+            if (Sender == Hero.MainHero)
+                Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 20f);
 
             if (!accepted)
             {
