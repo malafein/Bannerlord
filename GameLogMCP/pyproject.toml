@@ -1,0 +1,12 @@
+[project]
+name = "gamelogmcp"
+version = "0.1.0"
+description = "MCP server for Bannerlord mod log analysis"
+requires-python = ">=3.14"
+dependencies = [
+    "mcp>=1.26.0",
+    "fastapi>=0.100.0",
+]
+
+[project.scripts]
+gamelogmcp = "server:mcp.run"

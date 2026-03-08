@@ -194,6 +194,7 @@ namespace CalradianPostalService.Behaviors
             if (recipient == null) return;
             int cooldownDays = ModuleConfiguration.Instance.PostalService.PersonalMissiveCooldownDays;
             _personalMissiveCooldowns[recipient.StringId] = CampaignTime.DaysFromNow(cooldownDays);
+            CpsLogger.Debug($"[Cooldown] {recipient.Name} cooldown set, expires in {cooldownDays} day(s).");
         }
 
         public void game_menu_cps_town_courier_missive_command_on_consequence(MenuCallbackArgs args)
@@ -349,7 +350,7 @@ namespace CalradianPostalService.Behaviors
             try
             {
                 var arrivalTime = PostalServiceModel.GetMissiveDeliveryTime(Hero.MainHero, _recipientSelected);
-                CpsLogger.Info($"Missive sent to {_recipientSelected.Name}. Arrives in {(arrivalTime - CampaignTime.Now).ToDays:F1} day(s).");
+                CpsLogger.Info($"[{typeof(T).Name}] Missive sent to {_recipientSelected.Name}. Arrives in {(arrivalTime - CampaignTime.Now).ToDays:F1} day(s).");
                 var missive = new T
                 {
                     Sender = Hero.MainHero,

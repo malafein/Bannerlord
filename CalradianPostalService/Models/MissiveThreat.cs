@@ -74,7 +74,10 @@ namespace CalradianPostalService.Models
             {
                 // Grant Charm XP — the intimidation successfully landed
                 if (Sender == Hero.MainHero)
+                {
                     Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 15f);
+                    CpsLogger.Debug($"[CharmXP] +15 Charm XP granted to {Sender.Name}.");
+                }
 
                 int maxPenalty = 1;
                 if (honor >= 1) maxPenalty++;

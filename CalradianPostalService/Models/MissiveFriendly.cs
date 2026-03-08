@@ -50,7 +50,10 @@ namespace CalradianPostalService.Models
             {
                 // Letter was appreciated — grant Charm XP
                 if (Sender == Hero.MainHero)
+                {
                     Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 15f);
+                    CpsLogger.Debug($"[CharmXP] +15 Charm XP granted to {Sender.Name}.");
+                }
 
                 // --- Roll 2: Diminishing returns ---
                 // Easier to improve a cold relationship; harder when already warm.

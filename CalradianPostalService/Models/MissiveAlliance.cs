@@ -99,7 +99,10 @@ namespace CalradianPostalService.Models
                 $"chance:{chance:F2} roll:{roll:F2} accepted:{accepted}");
 
             if (Sender == Hero.MainHero)
+            {
                 Sender.HeroDeveloper?.AddSkillXp(DefaultSkills.Charm, 20f);
+                CpsLogger.Debug($"[CharmXP] +20 Charm XP granted to {Sender.Name}.");
+            }
 
             if (!accepted)
             {
