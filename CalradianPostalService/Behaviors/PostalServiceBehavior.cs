@@ -580,7 +580,9 @@ namespace CalradianPostalService.Behaviors
                 else if (dataStore.IsLoading)
                 {
                     dataStore.SyncData("_missiveSyncData", ref _missiveSyncData);
-                    List<MissiveSyncData> sync = JsonConvert.DeserializeObject(_missiveSyncData, settings) as List<MissiveSyncData>;
+                    List<MissiveSyncData> sync = (!string.IsNullOrEmpty(_missiveSyncData)
+                        ? JsonConvert.DeserializeObject(_missiveSyncData, settings) as List<MissiveSyncData>
+                        : null) ?? new List<MissiveSyncData>();
                     _missives = (from m in sync where m.TypeName == "MissiveFriendly"  select new MissiveFriendly(m)).ToList<IMissive>();
                     _missives.AddRange(from m in sync where m.TypeName == "MissiveThreat"   select new MissiveThreat(m));
                     _missives.AddRange(from m in sync where m.TypeName == "MissiveCommand"  select new MissiveCommand(m));
